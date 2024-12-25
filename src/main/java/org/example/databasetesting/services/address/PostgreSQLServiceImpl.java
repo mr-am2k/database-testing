@@ -1,8 +1,9 @@
 package org.example.databasetesting.services.address;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.example.databasetesting.entities.postgresql.AddressEntity;
-import org.example.databasetesting.repositories.postgresql.AddressRepository;
+import org.example.databasetesting.repositories.postgresql.PostgresAddressRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ExecutorService;
@@ -14,12 +15,13 @@ import java.util.List;
 
 @Service
 public class PostgreSQLServiceImpl implements AddressService<AddressEntity> {
-    private final AddressRepository addressRepository;
-    private final EntityManager entityManager;
+    private final PostgresAddressRepository postgresAddressRepository;
+    private final BatchProcessingService batchProcessingService;
 
-    public PostgreSQLServiceImpl(AddressRepository addressRepository, EntityManager entityManager) {
-        this.addressRepository = addressRepository;
-        this.entityManager = entityManager;
+    public PostgreSQLServiceImpl(PostgresAddressRepository postgresAddressRepository,
+                                 BatchProcessingService batchProcessingService) {
+        this.postgresAddressRepository = postgresAddressRepository;
+        this.batchProcessingService = batchProcessingService;
     }
 
     @Override
@@ -28,7 +30,7 @@ public class PostgreSQLServiceImpl implements AddressService<AddressEntity> {
             return request;
         }
 
-        int numberOfThreads = 1;
+        int numberOfThreads = Runtime.getRuntime().availableProcessors();
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
 
         try {
@@ -36,7 +38,9 @@ public class PostgreSQLServiceImpl implements AddressService<AddressEntity> {
 
             List<Future<?>> futures = new ArrayList<>();
             for (List<AddressEntity> batch : batches) {
-                futures.add(executorService.submit(() -> processBatch(batch)));
+                futures.add(executorService.submit(() ->
+                        batchProcessingService.processBatch(batch, batchSize)
+                ));
             }
 
             for (Future<?> future : futures) {
@@ -50,14 +54,6 @@ public class PostgreSQLServiceImpl implements AddressService<AddressEntity> {
         }
 
         return request;
-    }
-
-    private void processBatch(List<AddressEntity> batch) {
-        for (AddressEntity entity : batch) {
-            addressRepository.save(entity);
-        }
-        addressRepository.flush();
-        entityManager.clear();
     }
 
     private List<List<AddressEntity>> splitIntoBatches(List<AddressEntity> request, int batchSize) {

@@ -3,14 +3,11 @@ package org.example.databasetesting.entities.mongodb;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.UUID;
-
 @Document(collection = "address")
 public class AddressDocument {
 
     @Id
-    private UUID id;
-
+    private String id;
     private String address;
     private String city;
     private String country;
@@ -42,11 +39,11 @@ public class AddressDocument {
         this.address = address;
     }
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
     }
 
