@@ -9,11 +9,11 @@ public class Address {
     private String country;
     private String zipCode;
 
-    public AddressEntity toPostgreSQLEntity() {
-        return new AddressEntity(address, city, country, zipCode);
-    }
-
     public AddressDocument toMongoEntity() {
         return new AddressDocument(address, city, country, zipCode);
+    }
+
+    public AddressEntity toPostgresEntity() {
+        return new AddressEntity(address, city, country, zipCode);
     }
 }

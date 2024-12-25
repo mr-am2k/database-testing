@@ -17,11 +17,11 @@ public class UserEntity {
     private String password;
     private String status;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "address_id")
     private AddressEntity address;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "credit_card_id")
     private CreditCardEntity creditCard;
 

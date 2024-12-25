@@ -2,7 +2,7 @@ package org.example.databasetesting.entities.postgresql;
 
 import jakarta.persistence.*;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -13,7 +13,7 @@ public class BidEntity {
     private UUID id;
 
     private Double amount;
-    private Date bidTime;
+    private LocalDate bidTime;
 
     @ManyToOne
     @JoinColumn(name = "product_id")
@@ -47,11 +47,11 @@ public class BidEntity {
         this.amount = amount;
     }
 
-    public Date getBidTime() {
+    public LocalDate getBidTime() {
         return bidTime;
     }
 
-    public void setBidTime(Date bidTime) {
+    public void setBidTime(LocalDate bidTime) {
         this.bidTime = bidTime;
     }
 

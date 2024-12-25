@@ -2,7 +2,7 @@ package org.example.databasetesting.entities.postgresql;
 
 import jakarta.persistence.*;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -28,7 +28,7 @@ public class OrderDetailsEntity {
     @JoinColumn(name = "credit_card_id")
     private CreditCardEntity creditCard;
 
-    private Date orderDate;
+    private LocalDate orderDate;
 
     public UUID getId() {
         return id;
@@ -70,11 +70,11 @@ public class OrderDetailsEntity {
         this.creditCard = creditCard;
     }
 
-    public Date getOrderDate() {
+    public LocalDate getOrderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(Date orderDate) {
+    public void setOrderDate(LocalDate orderDate) {
         this.orderDate = orderDate;
     }
 

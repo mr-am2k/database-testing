@@ -4,17 +4,19 @@ import jakarta.persistence.Id;
 import org.example.databasetesting.entities.mongodb.models.UserModel;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Date;
+import java.time.LocalDate;
+
 
 @Document(collection = "products")
 public class ProductDocument {
     @Id
     private String id;
+    private String name;
     private String description;
     private String categoryName;
     private double startPrice;
-    private Date startDate;
-    private Date endDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private String status;
     private UserModel userModel;
 
@@ -24,6 +26,14 @@ public class ProductDocument {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDescription() {
@@ -50,19 +60,19 @@ public class ProductDocument {
         this.startPrice = startPrice;
     }
 
-    public Date getStartDate() {
+    public LocalDate getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
+    public void setStartDate(LocalDate startDate) {
         this.startDate = startDate;
     }
 
-    public Date getEndDate() {
+    public LocalDate getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Date endDate) {
+    public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
 

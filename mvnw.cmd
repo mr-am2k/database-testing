@@ -153,7 +153,7 @@ if exist %WRAPPER_JAR% (
 )
 @REM End of extension
 
-@REM If specified, validate the SHA-256 sum of the Maven wrapper jar file
+@REM If specified, valiLocalDate the SHA-256 sum of the Maven wrapper jar file
 SET WRAPPER_SHA_256_SUM=""
 FOR /F "usebackq tokens=1,2 delims==" %%A IN ("%MAVEN_PROJECTBASEDIR%\.mvn\wrapper\maven-wrapper.properties") DO (
     IF "%%A"=="wrapperSha256Sum" SET WRAPPER_SHA_256_SUM=%%B
@@ -162,9 +162,9 @@ IF NOT %WRAPPER_SHA_256_SUM%=="" (
     powershell -Command "&{"^
        "$hash = (Get-FileHash \"%WRAPPER_JAR%\" -Algorithm SHA256).Hash.ToLower();"^
        "If('%WRAPPER_SHA_256_SUM%' -ne $hash){"^
-       "  Write-Output 'Error: Failed to validate Maven wrapper SHA-256, your Maven wrapper might be compromised.';"^
+       "  Write-Output 'Error: Failed to valiLocalDate Maven wrapper SHA-256, your Maven wrapper might be compromised.';"^
        "  Write-Output 'Investigate or delete %WRAPPER_JAR% to attempt a clean download.';"^
-       "  Write-Output 'If you updated your Maven version, you need to update the specified wrapperSha256Sum property.';"^
+       "  Write-Output 'If you upLocalDated your Maven version, you need to upLocalDate the specified wrapperSha256Sum property.';"^
        "  exit 1;"^
        "}"^
        "}"

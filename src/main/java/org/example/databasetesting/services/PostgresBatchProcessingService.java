@@ -1,4 +1,4 @@
-package org.example.databasetesting.services.address;
+package org.example.databasetesting.services;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -9,12 +9,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class BatchProcessingService {
+public class PostgresBatchProcessingService<T> {
     @PersistenceContext
     private EntityManager entityManager;
 
     @Transactional
-    public void processBatch(List<AddressEntity> batch, int batchSize) {
+    public void processBatch(List<T> batch, int batchSize) {
         for (int i = 0; i < batch.size(); i++) {
             entityManager.persist(batch.get(i));
             if (i % batchSize == 0) {
@@ -26,4 +26,3 @@ public class BatchProcessingService {
         entityManager.clear();
     }
 }
-

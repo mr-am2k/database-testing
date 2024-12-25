@@ -251,7 +251,7 @@ fi
 # End of extension
 ##########################################################################################
 
-# If specified, validate the SHA-256 sum of the Maven wrapper jar file
+# If specified, valiLocalDate the SHA-256 sum of the Maven wrapper jar file
 wrapperSha256Sum=""
 while IFS="=" read -r key value; do
   case "$key" in (wrapperSha256Sum) wrapperSha256Sum=$value; break ;;
@@ -273,9 +273,9 @@ if [ -n "$wrapperSha256Sum" ]; then
     exit 1
   fi
   if [ $wrapperSha256Result = false ]; then
-    echo "Error: Failed to validate Maven wrapper SHA-256, your Maven wrapper might be compromised." >&2
+    echo "Error: Failed to valiLocalDate Maven wrapper SHA-256, your Maven wrapper might be compromised." >&2
     echo "Investigate or delete $wrapperJarPath to attempt a clean download." >&2
-    echo "If you updated your Maven version, you need to update the specified wrapperSha256Sum property." >&2
+    echo "If you upLocalDated your Maven version, you need to upLocalDate the specified wrapperSha256Sum property." >&2
     exit 1
   fi
 fi

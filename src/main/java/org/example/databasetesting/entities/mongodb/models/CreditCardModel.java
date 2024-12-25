@@ -1,10 +1,12 @@
 package org.example.databasetesting.entities.mongodb.models;
 
+import java.time.LocalDate;
+
 public class CreditCardModel {
     private String name;
     private String cardNumber;
     private String cvv;
-    private String expirationDate;
+    private LocalDate expirationDate;
 
     public String getName() {
         return name;
@@ -30,11 +32,11 @@ public class CreditCardModel {
         this.cvv = cvv;
     }
 
-    public String getExpirationDate() {
+    public LocalDate getExpirationDate() {
         return expirationDate;
     }
 
-    public void setExpirationDate(String expirationDate) {
+    public void setExpirationDate(LocalDate expirationDate) {
         this.expirationDate = expirationDate;
     }
 }

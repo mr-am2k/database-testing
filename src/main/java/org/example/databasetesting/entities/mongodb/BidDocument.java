@@ -3,7 +3,7 @@ package org.example.databasetesting.entities.mongodb;
 import jakarta.persistence.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Document(collection = "bids")
@@ -11,7 +11,7 @@ public class BidDocument {
     @Id
     private String id;
     private double amount;
-    private Date bidTime;
+    private LocalDate bidTime;
     private UUID productId;
     private UUID userId;
 
@@ -31,11 +31,11 @@ public class BidDocument {
         this.amount = amount;
     }
 
-    public Date getBidTime() {
+    public LocalDate getBidTime() {
         return bidTime;
     }
 
-    public void setBidTime(Date bidTime) {
+    public void setBidTime(LocalDate bidTime) {
         this.bidTime = bidTime;
     }
 

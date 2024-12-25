@@ -7,7 +7,7 @@ import org.example.databasetesting.entities.mongodb.models.ProductModel;
 import org.example.databasetesting.entities.mongodb.models.UserModel;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Document(collection = "order_details")
 public class OrderDetailsDocument {
@@ -17,7 +17,7 @@ public class OrderDetailsDocument {
     private UserModel winner;
     private AddressModel shippingAddress;
     private CreditCardModel paymentMethod;
-    private Date orderDate;
+    private LocalDate orderDate;
 
     public String getId() {
         return id;
@@ -59,11 +59,11 @@ public class OrderDetailsDocument {
         this.paymentMethod = paymentMethod;
     }
 
-    public Date getOrderDate() {
+    public LocalDate getOrderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(Date orderDate) {
-        this.orderDate = orderDate;
+    public void setOrderDate(LocalDate orderLocalDate) {
+        this.orderDate = orderLocalDate;
     }
 }

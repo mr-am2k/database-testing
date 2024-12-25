@@ -1,7 +1,8 @@
 package org.example.databasetesting.controllers;
 
 import org.example.databasetesting.response.DatabaseActionResponse;
-import org.example.databasetesting.services.address.GenericAddressService;
+import org.example.databasetesting.services.address.GenericServiceAddress;
+import org.example.databasetesting.services.products.GenericServiceProduct;
 import org.example.databasetesting.utils.DatabaseType;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -15,16 +16,25 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/api/v1/mongodb")
 public class MongoDBController {
-    private final GenericAddressService genericAddressService;
+    private final GenericServiceAddress genericServiceAddress;
+    private final GenericServiceProduct genericServiceProduct;
 
-    public MongoDBController(GenericAddressService genericAddressService) {
-        this.genericAddressService = genericAddressService;
+    public MongoDBController(GenericServiceAddress genericServiceAddress, GenericServiceProduct genericServiceProduct) {
+        this.genericServiceAddress = genericServiceAddress;
+        this.genericServiceProduct = genericServiceProduct;
     }
 
-    @PutMapping(path = "/batch-insert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(path = "/batch-insert-simple", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public DatabaseActionResponse simpleBatchInsert(
             @RequestParam("file") MultipartFile file,
             @RequestParam("batchSize") int batchSize) throws IOException {
-        return genericAddressService.saveAll(file, DatabaseType.MONGODB, batchSize);
+        return genericServiceAddress.saveAllSimple(file, DatabaseType.MONGODB, batchSize);
+    }
+
+    @PutMapping(path = "/batch-insert-complex", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public DatabaseActionResponse complexBatchInsert(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("batchSize") int batchSize) throws IOException {
+        return genericServiceProduct.saveAllComplex(file, DatabaseType.MONGODB, batchSize);
     }
 }

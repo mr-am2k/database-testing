@@ -2,7 +2,7 @@ package org.example.databasetesting.entities.postgresql;
 
 import jakarta.persistence.*;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -15,7 +15,7 @@ public class CreditCardEntity {
     private String name;
     private String cardNumber;
     private String cvv;
-    private Date expirationDate;
+    private LocalDate expirationDate;
 
     public UUID getId() {
         return id;
@@ -49,11 +49,11 @@ public class CreditCardEntity {
         this.cvv = cvv;
     }
 
-    public Date getExpirationDate() {
+    public LocalDate getExpirationDate() {
         return expirationDate;
     }
 
-    public void setExpirationDate(Date expirationDate) {
+    public void setExpirationDate(LocalDate expirationDate) {
         this.expirationDate = expirationDate;
     }
 }
