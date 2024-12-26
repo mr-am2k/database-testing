@@ -1,6 +1,5 @@
 package org.example.databasetesting.services.address;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import org.example.databasetesting.requests.Address;
 import org.example.databasetesting.requests.Product;
 import org.example.databasetesting.response.DatabaseActionResponse;
@@ -10,7 +9,6 @@ import org.example.databasetesting.utils.DatabaseType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -19,16 +17,13 @@ import java.util.List;
 public class GenericServiceAddressImpl implements GenericServiceAddress {
 
     private final EnumMap<DatabaseType, ActionsService> strategies = new EnumMap<>(DatabaseType.class);
-    private final MeterRegistry meterRegistry;
 
     public GenericServiceAddressImpl(
             PostgreSQLServiceAddressImpl postgreSQLService,
-            MongoDBServiceAddressImpl mongoDBService,
-            MeterRegistry meterRegistry
+            MongoDBServiceAddressImpl mongoDBService
     ) {
         strategies.put(DatabaseType.POSTGRESQL, postgreSQLService);
         strategies.put(DatabaseType.MONGODB, mongoDBService);
-        this.meterRegistry = meterRegistry;
     }
 
     @Override
@@ -42,30 +37,15 @@ public class GenericServiceAddressImpl implements GenericServiceAddress {
 
         List<? extends List<?>> batches = splitIntoBatches(entityValues, batchSize);
 
-        long initialCpuUsage = getCpuUsage();
-        long initialMemoryUsage = getMemoryUsage();
-
         final long startTime = System.nanoTime();
 
-        strategies.get(databaseType).saveAll(batches, batchSize);
+        DatabaseActionResponse databaseActionResponse = strategies.get(databaseType).saveAll(batches, batchSize);
 
         final long endTime = System.nanoTime();
 
-        long finalCpuUsage = getCpuUsage();
-        long finalMemoryUsage = getMemoryUsage();
-
-        meterRegistry.gauge("database.save.cpuUsage", finalCpuUsage - initialCpuUsage);
-        meterRegistry.gauge("database.save.memoryUsage", finalMemoryUsage - initialMemoryUsage);
-
         final long duration = (endTime - startTime) / 1_000_000;
 
-        String cpuUsageFormatted = (float) ((finalCpuUsage - initialCpuUsage) / 100) + "%";
-
-        float ramUsageMB = (float) (finalMemoryUsage - initialMemoryUsage) / 1_048_576;
-
-        String ramUsageFormatted = ramUsageMB + "MB";
-
-        return new DatabaseActionResponse(duration, cpuUsageFormatted, ramUsageFormatted);
+        return new DatabaseActionResponse(duration, databaseActionResponse.getCpuUsage(), databaseActionResponse.getRamUsage());
     }
 
     @Override
@@ -79,30 +59,17 @@ public class GenericServiceAddressImpl implements GenericServiceAddress {
 
         List<? extends List<?>> batches = splitIntoBatches(entityValues, batchSize);
 
-        long initialCpuUsage = getCpuUsage();
-        long initialMemoryUsage = getMemoryUsage();
-
         final long startTime = System.nanoTime();
 
-        strategies.get(databaseType).saveAll(batches, batchSize);
+        DatabaseActionResponse databaseActionResponse = strategies.get(databaseType).saveAll(batches, batchSize);
 
         final long endTime = System.nanoTime();
 
-        long finalCpuUsage = getCpuUsage();
-        long finalMemoryUsage = getMemoryUsage();
-
-        meterRegistry.gauge("database.save.cpuUsage", finalCpuUsage - initialCpuUsage);
-        meterRegistry.gauge("database.save.memoryUsage", finalMemoryUsage - initialMemoryUsage);
 
         final long duration = (endTime - startTime) / 1_000_000;
 
-        String cpuUsageFormatted = (float) ((finalCpuUsage - initialCpuUsage) / 100) + "%";
 
-        float ramUsageMB = (float) (finalMemoryUsage - initialMemoryUsage) / 1_048_576;
-
-        String ramUsageFormatted = ramUsageMB + "MB";
-
-        return new DatabaseActionResponse(duration, cpuUsageFormatted, ramUsageFormatted);
+        return new DatabaseActionResponse(duration, databaseActionResponse.getCpuUsage(), databaseActionResponse.getRamUsage());
     }
 
     public <T> List<List<T>> splitIntoBatches(List<T> request, int batchSize) {
@@ -112,13 +79,5 @@ public class GenericServiceAddressImpl implements GenericServiceAddress {
             batches.add(request.subList(i, end));
         }
         return batches;
-    }
-
-    private long getCpuUsage() {
-        return (long) (ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage() * 100);
-    }
-
-    private long getMemoryUsage() {
-        return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
     }
 }

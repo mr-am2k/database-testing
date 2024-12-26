@@ -1,7 +1,9 @@
 package org.example.databasetesting.services;
 
+import org.example.databasetesting.response.DatabaseActionResponse;
+
 import java.util.List;
 
 public interface ActionsService<T> {
-    void saveAll(List<List<T>> batches, int batchSize);
+    DatabaseActionResponse saveAll(List<List<T>> batches, int batchSize);
 }
