@@ -28,22 +28,22 @@ from tqdm import tqdm
 #     generate_address_data()
 
 # Products
-def generate_data(num_records=10_000_000, filename='product_10M.csv'):
+def generate_data(num_records=10_000_000, filename='users_10M.csv'):
     fake = Faker()
 
-    header = ['name', 'description', 'startPrice', 'startDate', 'endDate', 'status',
-              'categoryName', 'firstName', 'lastName', 'email', 'password', 'userStatus',
+    header = ['firstName', 'lastName', 'email', 'password', 'userStatus',
               'address', 'city', 'country', 'zipCode', 'nameOnTheCard', 'cardNumber',
               'cvv', 'expirationDate']
 
-    categories = ['Electronics', 'Books', 'Clothing', 'Home', 'Sports', 'Toys']
-    statuses = ['ACTIVE', 'INACTIVE', 'PENDING']
     user_statuses = ['VERIFIED', 'UNVERIFIED', 'SUSPENDED']
 
     # Calculate date ranges
     current_date = datetime.now()
     start_range = current_date - timedelta(days=365 * 2.5)  # 2.5 years back
     end_range = current_date + timedelta(days=365 * 2.5)  # 2.5 years forward
+
+    def short_string(string, length=10):
+        return string[:length]  # Skraćuje string na dužinu 10 karaktera
 
     with open(filename, 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
@@ -57,29 +57,22 @@ def generate_data(num_records=10_000_000, filename='product_10M.csv'):
             start_date_formatted = start_date.strftime('%Y-%m-%dT%H:%M:%S')
             end_date_formatted = end_date.strftime('%Y-%m-%dT%H:%M:%S')
 
+            # Kreiramo CSV red sa skraćenim stringovima
             writer.writerow([
-                fake.word().capitalize() + " " + fake.word().capitalize(),
-                fake.text(max_nb_chars=200),
-                round(uniform(10, 1000), 2),
-                start_date_formatted,
-                end_date_formatted,
-                choice(statuses),
-                choice(categories),
-                fake.first_name(),
-                fake.last_name(),
-                fake.email(),
-                fake.password(length=12),
-                choice(user_statuses),
-                fake.street_address(),
-                fake.city(),
-                fake.country(),
-                fake.postcode(),
-                fake.name(),
-                fake.credit_card_number(),
-                fake.credit_card_security_code(),
-                fake.credit_card_expire()
+                short_string(fake.first_name()),  # Ime
+                short_string(fake.last_name()),  # Prezime
+                short_string(fake.email()),  # Email
+                short_string(fake.password(length=12)),  # Lozinka
+                short_string(choice(user_statuses)),  # Status korisnika
+                short_string(fake.street_address()),  # Adresa
+                short_string(fake.city()),  # Grad
+                short_string(fake.country()),  # Država
+                short_string(fake.postcode()),  # Poštanski broj
+                short_string(fake.name()),  # Ime na kartici
+                short_string(fake.credit_card_number()),  # Broj kreditne kartice
+                short_string(fake.credit_card_security_code()),  # CVV
+                short_string(fake.credit_card_expire())  # Datum isteka kartice
             ])
-
 
 if __name__ == '__main__':
     generate_data()

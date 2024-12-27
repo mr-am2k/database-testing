@@ -1,4 +1,4 @@
-package org.example.databasetesting.services.products;
+package org.example.databasetesting.services.users;
 
 import org.example.databasetesting.entities.postgresql.ProductEntity;
 import org.example.databasetesting.response.DatabaseActionResponse;
@@ -14,10 +14,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
-public class PostgreSQLServiceProductImpl implements ActionsService<ProductEntity> {
+public class PostgreSQLServiceUserImpl implements ActionsService<ProductEntity> {
     private final PostgresBatchProcessingService<ProductEntity> postgresBatchProcessingService;
 
-    public PostgreSQLServiceProductImpl(PostgresBatchProcessingService<ProductEntity> postgresBatchProcessingService) {
+    public PostgreSQLServiceUserImpl(PostgresBatchProcessingService<ProductEntity> postgresBatchProcessingService) {
         this.postgresBatchProcessingService = postgresBatchProcessingService;
     }
 

@@ -5,6 +5,9 @@ public class DatabaseActionResponse {
     private String cpuUsage;
     private String ramUsage;
 
+    public DatabaseActionResponse() {
+    }
+
     public DatabaseActionResponse(long time, String cpuUsage, String ramUsage) {
         this.time = time;
         this.cpuUsage = cpuUsage;

@@ -1,15 +1,12 @@
 package org.example.databasetesting.services.address;
 
 import org.example.databasetesting.entities.postgresql.AddressEntity;
-import org.example.databasetesting.entities.postgresql.ProductEntity;
-import org.example.databasetesting.requests.Address;
-import org.example.databasetesting.requests.Product;
 import org.example.databasetesting.response.DatabaseActionResponse;
 import org.example.databasetesting.services.ActionsService;
 import org.example.databasetesting.services.PostgresBatchProcessingService;
 import org.springframework.stereotype.Service;
 
-import javax.swing.*;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;

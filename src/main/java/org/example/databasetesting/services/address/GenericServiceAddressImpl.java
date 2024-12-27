@@ -1,7 +1,6 @@
 package org.example.databasetesting.services.address;
 
 import org.example.databasetesting.requests.Address;
-import org.example.databasetesting.requests.Product;
 import org.example.databasetesting.response.DatabaseActionResponse;
 import org.example.databasetesting.services.ActionsService;
 import org.example.databasetesting.utils.CSVUtil;
@@ -44,30 +43,6 @@ public class GenericServiceAddressImpl implements GenericServiceAddress {
         final long endTime = System.nanoTime();
 
         final long duration = (endTime - startTime) / 1_000_000;
-
-        return new DatabaseActionResponse(duration, databaseActionResponse.getCpuUsage(), databaseActionResponse.getRamUsage());
-    }
-
-    @Override
-    public DatabaseActionResponse saveAllComplex(MultipartFile file, DatabaseType databaseType, int batchSize) {
-        final List<Product> requestValues = CSVUtil.parseCSV(file, Product.class);
-
-        List<?> entityValues = switch (databaseType) {
-            case MONGODB -> requestValues.stream().map(Product::toProductDocument).toList();
-            case POSTGRESQL -> requestValues.stream().map(Product::toProductEntity).toList();
-        };
-
-        List<? extends List<?>> batches = splitIntoBatches(entityValues, batchSize);
-
-        final long startTime = System.nanoTime();
-
-        DatabaseActionResponse databaseActionResponse = strategies.get(databaseType).saveAll(batches, batchSize);
-
-        final long endTime = System.nanoTime();
-
-
-        final long duration = (endTime - startTime) / 1_000_000;
-
 
         return new DatabaseActionResponse(duration, databaseActionResponse.getCpuUsage(), databaseActionResponse.getRamUsage());
     }

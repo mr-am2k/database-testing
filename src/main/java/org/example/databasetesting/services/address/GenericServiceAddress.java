@@ -6,5 +6,4 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface GenericServiceAddress {
     DatabaseActionResponse saveAllSimple(MultipartFile file, DatabaseType databaseType, int batchSize);
-    DatabaseActionResponse saveAllComplex(MultipartFile file, DatabaseType databaseType, int batchSize);
 }

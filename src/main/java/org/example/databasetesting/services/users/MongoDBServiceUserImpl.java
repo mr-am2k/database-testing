@@ -1,7 +1,7 @@
-package org.example.databasetesting.services.products;
+package org.example.databasetesting.services.users;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import org.example.databasetesting.entities.mongodb.ProductDocument;
+import org.example.databasetesting.entities.mongodb.UserDocument;
 import org.example.databasetesting.repositories.mongodb.MongoProductRepository;
 import org.example.databasetesting.response.DatabaseActionResponse;
 import org.example.databasetesting.services.ActionsService;
@@ -16,11 +16,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
-public class MongoDBServiceProductImpl implements ActionsService<ProductDocument> {
+public class MongoDBServiceUserImpl implements ActionsService<UserDocument> {
     private final MongoProductRepository mongoProductRepository;
     private final MeterRegistry meterRegistry;
 
-    public MongoDBServiceProductImpl(MongoProductRepository mongoProductRepository, MeterRegistry meterRegistry) {
+    public MongoDBServiceUserImpl(MongoProductRepository mongoProductRepository, MeterRegistry meterRegistry) {
         this.mongoProductRepository = mongoProductRepository;
         this.meterRegistry = meterRegistry;
     }
@@ -34,7 +34,7 @@ public class MongoDBServiceProductImpl implements ActionsService<ProductDocument
     }
 
     @Override
-    public DatabaseActionResponse saveAll(List<List<ProductDocument>> request, int batchSize) {
+    public DatabaseActionResponse saveAll(List<List<UserDocument>> request, int batchSize) {
         int numberOfThreads = 4;
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
         AtomicLong maxCpuUsage = new AtomicLong(0);
@@ -42,7 +42,7 @@ public class MongoDBServiceProductImpl implements ActionsService<ProductDocument
 
         try {
             List<Future<?>> futures = new ArrayList<>();
-            for (List<ProductDocument> batch : request) {
+            for (List<UserDocument> batch : request) {
                 futures.add(executorService.submit(() -> processBatch(batch, maxCpuUsage, maxMemoryUsage)));
             }
 
@@ -63,7 +63,7 @@ public class MongoDBServiceProductImpl implements ActionsService<ProductDocument
         }
     }
 
-    private void processBatch(List<ProductDocument> batch, AtomicLong maxCpuUsage, AtomicLong maxMemoryUsage) {
+    private void processBatch(List<UserDocument> batch, AtomicLong maxCpuUsage, AtomicLong maxMemoryUsage) {
         long startCpu = getCpuUsage();
         long startMemory = getMemoryUsage();
 

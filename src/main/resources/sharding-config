@@ -199,10 +199,12 @@ db.address.createIndex({ "city": 1 })
 sh.shardCollection("database-testing-sharding.address", { "city": 1 })
 
 5.
-#Set sharding on 1mb
+#Set sharding on 100mb
 
 use config
 db.settings.update(
   { _id: "chunksize" },
-  { $set: { value: 1 } } // Postavlja veličinu chunkova na 1 MB
+  { $set: { value: 100 } } // Chunk sizes set to 100 MB
 )
+
+java -Xms512m -Xmx8g -jar ./target/database-testing-0.0.1-SNAPSHOT.jar

@@ -10,7 +10,7 @@ import java.util.UUID;
 @Document(collection = "users")
 public class UserDocument {
     @Id
-    private UUID id;
+    private String id;
     private String firstName;
     private String lastName;
     private String email;
@@ -19,11 +19,14 @@ public class UserDocument {
     private AddressModel address;
     private CreditCardModel creditCard;
 
-    public UUID getId() {
+    public UserDocument() {
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
     }
 
