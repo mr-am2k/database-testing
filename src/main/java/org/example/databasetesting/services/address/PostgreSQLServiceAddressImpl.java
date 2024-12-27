@@ -1,68 +1,62 @@
 package org.example.databasetesting.services.address;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import org.example.databasetesting.entities.postgresql.AddressEntity;
 import org.example.databasetesting.response.DatabaseActionResponse;
 import org.example.databasetesting.services.ActionsService;
-import org.example.databasetesting.services.PostgresBatchProcessingService;
 import org.springframework.stereotype.Service;
 
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
-import java.util.ArrayList;
+import java.lang.management.ManagementFactory;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class PostgreSQLServiceAddressImpl implements ActionsService<AddressEntity> {
-    private final PostgresBatchProcessingService<AddressEntity> postgresBatchProcessingService;
+    @PersistenceContext
+    private EntityManager entityManager;
+    private final MeterRegistry meterRegistry;
 
-    public PostgreSQLServiceAddressImpl(PostgresBatchProcessingService<AddressEntity> postgresBatchProcessingService) {
-        this.postgresBatchProcessingService = postgresBatchProcessingService;
+    public PostgreSQLServiceAddressImpl(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+    }
+
+    private long getCpuUsage() {
+        return (long) (ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage() * 100);
+    }
+
+    private long getMemoryUsage() {
+        return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
     }
 
     @Override
-    public DatabaseActionResponse saveAll(List<List<AddressEntity>> request, int batchSize) {
-        int numberOfThreads = 4;
-        ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
-        AtomicLong maxCpuUsage = new AtomicLong(0);
-        AtomicLong maxMemoryUsage = new AtomicLong(0);
+    @Transactional
+    public DatabaseActionResponse saveAll(List<AddressEntity> entities) {
+        long startCpu = getCpuUsage();
+        long startMemory = getMemoryUsage();
 
-        try {
-            List<Future<PostgresBatchProcessingService.ResourceMetrics>> futures = new ArrayList<>();
-
-            for (List<AddressEntity> batch : request) {
-                futures.add(executorService.submit(() ->
-                        postgresBatchProcessingService.processBatch(batch, batchSize)
-                ));
-            }
-
-            for (Future<PostgresBatchProcessingService.ResourceMetrics> future : futures) {
-                PostgresBatchProcessingService.ResourceMetrics metrics = future.get();
-                updateMaxUsage(maxCpuUsage, metrics.cpuUsage());
-                updateMaxUsage(maxMemoryUsage, metrics.memoryUsage());
-            }
-
-            String cpuUsageFormatted = (float) (maxCpuUsage.get() / 100) + "%";
-            float ramUsageMB = (float) maxMemoryUsage.get() / 1_048_576;
-            String ramUsageFormatted = ramUsageMB + "MB";
-
-            return new DatabaseActionResponse(0, cpuUsageFormatted, ramUsageFormatted);
-
-        } catch (Exception e) {
-            throw new RuntimeException("Error processing batches in parallel", e);
-        } finally {
-            executorService.shutdown();
+        for (AddressEntity entity : entities) {
+            entityManager.persist(entity);
         }
-    }
 
-    private void updateMaxUsage(AtomicLong currentMax, long newValue) {
-        long oldValue;
-        do {
-            oldValue = currentMax.get();
-            if (newValue <= oldValue) break;
-        } while (!currentMax.compareAndSet(oldValue, newValue));
+        entityManager.flush();
+        entityManager.clear();
+
+        long endCpu = getCpuUsage();
+        long endMemory = getMemoryUsage();
+
+        long cpuDiff = endCpu - startCpu;
+        long memoryDiff = endMemory - startMemory;
+
+        meterRegistry.gauge("database.operation.cpuUsage", cpuDiff);
+        meterRegistry.gauge("database.operation.memoryUsage", memoryDiff);
+
+        String cpuUsageFormatted = (float) (cpuDiff / 100) + "%";
+        float ramUsageMB = (float) memoryDiff / 1_048_576;
+        String ramUsageFormatted = ramUsageMB + "MB";
+
+        return new DatabaseActionResponse(0, cpuUsageFormatted, ramUsageFormatted);
     }
 }

@@ -1,6 +1,6 @@
-package org.example.databasetesting.services.address;
+package org.example.databasetesting.services.product;
 
-import org.example.databasetesting.requests.Address;
+import org.example.databasetesting.requests.Product;
 import org.example.databasetesting.response.DatabaseActionResponse;
 import org.example.databasetesting.services.ActionsService;
 import org.example.databasetesting.utils.CSVUtil;
@@ -13,20 +13,20 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
-public class GenericServiceAddressImpl implements GenericServiceAddress {
+public class GenericServiceProductImpl implements GenericServiceProduct {
     private static final int NUMBER_OF_THREADS = 25;
     private final EnumMap<DatabaseType, ActionsService> strategies = new EnumMap<>(DatabaseType.class);
 
-    public GenericServiceAddressImpl(
-            PostgreSQLServiceAddressImpl postgreSQLService,
-            MongoDBServiceAddressImpl mongoDBService
+    public GenericServiceProductImpl(
+            PostgreSQLServiceProductImpl postgreSQLService,
+            MongoDBServiceProductImpl mongoDBService
     ) {
         strategies.put(DatabaseType.POSTGRESQL, postgreSQLService);
         strategies.put(DatabaseType.MONGODB, mongoDBService);
     }
 
     @Override
-    public DatabaseActionResponse saveAllSimple(MultipartFile file, DatabaseType databaseType, int batchSize) {
+    public DatabaseActionResponse saveAllComplex(MultipartFile file, DatabaseType databaseType, int batchSize) {
         final long startTime = System.nanoTime();
         AtomicReference<String> maxCpuUsage = new AtomicReference<>("0%");
         AtomicReference<String> maxRamUsage = new AtomicReference<>("0MB");
@@ -34,14 +34,14 @@ public class GenericServiceAddressImpl implements GenericServiceAddress {
 
         ExecutorService executorService = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
         List<Future<?>> futures = new ArrayList<>();
-        BlockingQueue<List<Address>> batchQueue = new LinkedBlockingQueue<>(NUMBER_OF_THREADS);
+        BlockingQueue<List<Product>> batchQueue = new LinkedBlockingQueue<>(NUMBER_OF_THREADS);
 
         try {
             Future<?> parserTask = executorService.submit(() -> {
                 try {
-                    CSVUtil.parseCSVInBatches(file, Address.class, batchSize, batch -> {
+                    CSVUtil.parseCSVInBatches(file, Product.class, batchSize, batch -> {
                         try {
-                            batchQueue.put(batch);
+                            batchQueue.put(batch); // Blocks if the queue is full
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
                             throw new RuntimeException("Thread interrupted while adding to batch queue", e);
@@ -60,14 +60,14 @@ public class GenericServiceAddressImpl implements GenericServiceAddress {
                 futures.add(executorService.submit(() -> {
                     try {
                         while (true) {
-                            List<Address> batch = batchQueue.take();
+                            List<Product> batch = batchQueue.take();
                             if (batch.isEmpty()) {
                                 break;
                             }
 
                             var entityBatch = switch (databaseType) {
-                                case MONGODB -> batch.stream().map(Address::toMongoEntity).toList();
-                                case POSTGRESQL -> batch.stream().map(Address::toPostgresEntity).toList();
+                                case MONGODB -> batch.stream().map(Product::toProductDocument).toList();
+                                case POSTGRESQL -> batch.stream().map(Product::toProductEntity).toList();
                             };
 
                             DatabaseActionResponse batchResponse = strategies.get(databaseType).saveAll(entityBatch);

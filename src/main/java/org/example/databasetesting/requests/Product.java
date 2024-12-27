@@ -1,14 +1,22 @@
 package org.example.databasetesting.requests;
 
-import org.example.databasetesting.entities.mongodb.UserDocument;
+import org.example.databasetesting.entities.mongodb.ProductDocument;
 import org.example.databasetesting.entities.mongodb.models.AddressModel;
 import org.example.databasetesting.entities.mongodb.models.CreditCardModel;
+import org.example.databasetesting.entities.mongodb.models.UserModel;
 import org.example.databasetesting.entities.postgresql.*;
 
 import java.time.LocalDate;
 
 
-public class User {
+public class Product {
+    private String name;
+    private String description;
+    private String categoryName;
+    private double startPrice;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private String status;
     private String firstName;
     private String lastName;
     private String email;
@@ -22,6 +30,66 @@ public class User {
     private String cardNumber;
     private String cvv;
     private LocalDate expirationDate;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public double getStartPrice() {
+        return startPrice;
+    }
+
+    public void setStartPrice(double startPrice) {
+        this.startPrice = startPrice;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setExpirationDate(LocalDate expirationDate) {
+        this.expirationDate = expirationDate;
+    }
 
     public String getFirstName() {
         return firstName;
@@ -127,10 +195,14 @@ public class User {
         this.expirationDate = expirationDate;
     }
 
-    public UserEntity toUserEntity() {
+    public ProductEntity toProductEntity() {
+        CategoryEntity categoryEntity = new CategoryEntity();
         CreditCardEntity creditCardEntity = new CreditCardEntity();
         AddressEntity addressEntity = new AddressEntity();
         UserEntity userEntity = new UserEntity();
+        ProductEntity productEntity = new ProductEntity();
+
+        categoryEntity.setName(this.categoryName);
 
         creditCardEntity.setName(this.nameOnTheCard);
         creditCardEntity.setCardNumber(this.cardNumber);
@@ -147,17 +219,26 @@ public class User {
         userEntity.setEmail(this.email);
         userEntity.setPassword(this.password);
         userEntity.setStatus(this.userStatus);
-        userEntity.setStatus(this.userStatus);
         userEntity.setCreditCard(creditCardEntity);
         userEntity.setAddress(addressEntity);
 
-        return userEntity;
+        productEntity.setName(this.name);
+        productEntity.setDescription(this.description);
+        productEntity.setStartPrice(this.startPrice);
+        productEntity.setStartDate(this.startDate);
+        productEntity.setEndDate(this.endDate);
+        productEntity.setStatus(this.userStatus);
+        productEntity.setCategory(categoryEntity);
+        productEntity.setSeller(userEntity);
+
+        return productEntity;
     }
 
-    public UserDocument toUserDocument() {
+    public ProductDocument toProductDocument() {
         AddressModel addressModel = new AddressModel();
         CreditCardModel creditCardModel = new CreditCardModel();
-        UserDocument userDocument = new UserDocument();
+        UserModel userModel = new UserModel();
+        ProductDocument productDocument = new ProductDocument();
 
         addressModel.setAddress(this.address);
         addressModel.setCity(this.city);
@@ -169,14 +250,23 @@ public class User {
         creditCardModel.setExpirationDate(this.expirationDate);
         creditCardModel.setName(this.nameOnTheCard);
 
-        userDocument.setFirstName(this.firstName);
-        userDocument.setLastName(this.lastName);
-        userDocument.setEmail(this.email);
-        userDocument.setPassword(this.password);
-        userDocument.setStatus(this.userStatus);
-        userDocument.setAddress(addressModel);
-        userDocument.setCreditCard(creditCardModel);
+        userModel.setFirstName(this.firstName);
+        userModel.setLastName(this.lastName);
+        userModel.setEmail(this.email);
+        userModel.setPassword(this.password);
+        userModel.setStatus(this.userStatus);
+        userModel.setAddress(addressModel);
+        userModel.setCreditCard(creditCardModel);
 
-        return userDocument;
+        productDocument.setName(this.name);
+        productDocument.setDescription(this.description);
+        productDocument.setStartPrice(this.startPrice);
+        productDocument.setStartDate(this.startDate);
+        productDocument.setEndDate(this.endDate);
+        productDocument.setStatus(this.userStatus);
+        productDocument.setCategoryName(this.categoryName);
+        productDocument.setUserModel(userModel);
+
+        return productDocument;
     }
 }

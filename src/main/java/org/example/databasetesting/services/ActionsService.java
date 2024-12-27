@@ -5,5 +5,5 @@ import org.example.databasetesting.response.DatabaseActionResponse;
 import java.util.List;
 
 public interface ActionsService<T> {
-    DatabaseActionResponse saveAll(List<List<T>> batches, int batchSize);
+    DatabaseActionResponse saveAll(List<T> entities);
 }

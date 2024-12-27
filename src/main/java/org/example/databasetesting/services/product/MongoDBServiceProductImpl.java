@@ -1,26 +1,22 @@
-package org.example.databasetesting.services.users;
+package org.example.databasetesting.services.product;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import org.example.databasetesting.entities.mongodb.UserDocument;
+import org.example.databasetesting.entities.mongodb.ProductDocument;
 import org.example.databasetesting.repositories.mongodb.MongoProductRepository;
 import org.example.databasetesting.response.DatabaseActionResponse;
 import org.example.databasetesting.services.ActionsService;
 import org.springframework.stereotype.Service;
 
 import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
-public class MongoDBServiceUserImpl implements ActionsService<UserDocument> {
+public class MongoDBServiceProductImpl implements ActionsService<ProductDocument> {
     private final MongoProductRepository mongoProductRepository;
     private final MeterRegistry meterRegistry;
 
-    public MongoDBServiceUserImpl(MongoProductRepository mongoProductRepository, MeterRegistry meterRegistry) {
+    public MongoDBServiceProductImpl(MongoProductRepository mongoProductRepository, MeterRegistry meterRegistry) {
         this.mongoProductRepository = mongoProductRepository;
         this.meterRegistry = meterRegistry;
     }
@@ -34,36 +30,29 @@ public class MongoDBServiceUserImpl implements ActionsService<UserDocument> {
     }
 
     @Override
-    public DatabaseActionResponse saveAll(List<List<UserDocument>> request, int batchSize) {
-        int numberOfThreads = 4;
-        ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
-        AtomicLong maxCpuUsage = new AtomicLong(0);
-        AtomicLong maxMemoryUsage = new AtomicLong(0);
+    public DatabaseActionResponse saveAll(List<ProductDocument> entities) {
+        long startCpu = getCpuUsage();
+        long startMemory = getMemoryUsage();
 
-        try {
-            List<Future<?>> futures = new ArrayList<>();
-            for (List<UserDocument> batch : request) {
-                futures.add(executorService.submit(() -> processBatch(batch, maxCpuUsage, maxMemoryUsage)));
-            }
+        mongoProductRepository.saveAll(entities);
 
-            for (Future<?> future : futures) {
-                future.get();
-            }
+        long endCpu = getCpuUsage();
+        long endMemory = getMemoryUsage();
 
-            String cpuUsageFormatted = (float) (maxCpuUsage.get() / 100) + "%";
-            float ramUsageMB = (float) maxMemoryUsage.get() / 1_048_576;
-            String ramUsageFormatted = ramUsageMB + "MB";
+        long cpuDiff = endCpu - startCpu;
+        long memoryDiff = endMemory - startMemory;
 
-            return new DatabaseActionResponse(0, cpuUsageFormatted, ramUsageFormatted);
+        meterRegistry.gauge("mongodb.operation.cpuUsage", cpuDiff);
+        meterRegistry.gauge("mongodb.operation.memoryUsage", memoryDiff);
 
-        } catch (Exception e) {
-            throw new RuntimeException("Error processing batches in parallel", e);
-        } finally {
-            executorService.shutdown();
-        }
+        String cpuUsageFormatted = (float) (cpuDiff / 100) + "%";
+        float ramUsageMB = (float) memoryDiff / 1_048_576;
+        String ramUsageFormatted = ramUsageMB + "MB";
+
+        return new DatabaseActionResponse(0, cpuUsageFormatted, ramUsageFormatted);
     }
 
-    private void processBatch(List<UserDocument> batch, AtomicLong maxCpuUsage, AtomicLong maxMemoryUsage) {
+    private void processBatch(List<ProductDocument> batch, AtomicLong maxCpuUsage, AtomicLong maxMemoryUsage) {
         long startCpu = getCpuUsage();
         long startMemory = getMemoryUsage();
 
