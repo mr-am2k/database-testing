@@ -10,29 +10,38 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class CSVUtil {
-    public static <T> void parseCSVInChunks(MultipartFile file, Class<T> clazz, int chunkSize, Consumer<List<T>> chunkProcessor) {
+
+    public static <T> void parseCSVInBatches(MultipartFile file, Class<T> clazz, int batchSize, Consumer<List<T>> batchProcessor) {
         try (CSVReader csvReader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
             String[] headers = csvReader.readNext();
             if (headers == null) {
                 throw new IllegalArgumentException("CSV file is empty!");
             }
 
-            List<T> currentChunk = new ArrayList<>(chunkSize);
+            List<T> currentBatch = new ArrayList<>(batchSize);
             String[] values;
 
             while ((values = csvReader.readNext()) != null) {
                 T instance = createInstance(clazz, headers, values);
-                currentChunk.add(instance);
+                currentBatch.add(instance);
 
-                if (currentChunk.size() >= chunkSize) {
-                    chunkProcessor.accept(new ArrayList<>(currentChunk));
-                    currentChunk.clear();
+                if (currentBatch.size() >= batchSize) {
+                    try {
+                        batchProcessor.accept(new ArrayList<>(currentBatch)); // Blocks if queue is full
+                    } catch (Exception e) {
+                        throw new RuntimeException("Error during batch processing", e);
+                    }
+                    currentBatch.clear();
                 }
             }
 
             // Process any remaining records
-            if (!currentChunk.isEmpty()) {
-                chunkProcessor.accept(new ArrayList<>(currentChunk));
+            if (!currentBatch.isEmpty()) {
+                try {
+                    batchProcessor.accept(new ArrayList<>(currentBatch));
+                } catch (Exception e) {
+                    throw new RuntimeException("Error during batch processing", e);
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException("An error has occurred while processing file: " + e.getMessage(), e);

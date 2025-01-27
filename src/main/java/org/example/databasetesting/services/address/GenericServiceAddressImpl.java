@@ -14,8 +14,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class GenericServiceAddressImpl implements GenericServiceAddress {
-    private static final int PROCESSING_THREADS = 4;
-    private static final int CHUNK_SIZE = 1000000;
+    private static final int NUMBER_OF_THREADS = 25;
     private final EnumMap<DatabaseType, ActionsService> strategies = new EnumMap<>(DatabaseType.class);
 
     public GenericServiceAddressImpl(
@@ -33,64 +32,79 @@ public class GenericServiceAddressImpl implements GenericServiceAddress {
         AtomicReference<String> maxRamUsage = new AtomicReference<>("0MB");
         long duration;
 
-        ExecutorService executorService = Executors.newFixedThreadPool(PROCESSING_THREADS);
+        ExecutorService executorService = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+        List<Future<?>> futures = new ArrayList<>();
+        BlockingQueue<List<Address>> batchQueue = new LinkedBlockingQueue<>(NUMBER_OF_THREADS);
 
         try {
-            // Process each chunk sequentially
-            CSVUtil.parseCSVInChunks(file, Address.class, CHUNK_SIZE, chunk -> {
-                processChunk(chunk, databaseType, batchSize, executorService, maxCpuUsage, maxRamUsage);
+            Future<?> parserTask = executorService.submit(() -> {
+                try {
+                    CSVUtil.parseCSVInBatches(file, Address.class, batchSize, batch -> {
+                        try {
+                            batchQueue.put(batch);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            throw new RuntimeException("Thread interrupted while adding to batch queue", e);
+                        }
+                    });
+
+                    for (int i = 0; i < NUMBER_OF_THREADS; i++) {
+                        batchQueue.put(Collections.emptyList());
+                    }
+                } catch (RuntimeException | InterruptedException e) {
+                    throw new RuntimeException("Error during CSV parsing", e);
+                }
             });
 
+            for (int i = 0; i < NUMBER_OF_THREADS; i++) {
+                futures.add(executorService.submit(() -> {
+                    try {
+                        while (true) {
+                            List<Address> batch = batchQueue.take();
+                            if (batch.isEmpty()) {
+                                break;
+                            }
+
+                            var entityBatch = switch (databaseType) {
+                                case MONGODB -> batch.stream().map(Address::toMongoEntity).toList();
+                                case POSTGRESQL -> batch.stream().map(Address::toPostgresEntity).toList();
+                            };
+
+                            DatabaseActionResponse batchResponse = strategies.get(databaseType).saveAll(entityBatch);
+                            updateMaxMetrics(batchResponse, maxCpuUsage, maxRamUsage);
+                        }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new RuntimeException("Batch processing thread interrupted", e);
+                    }
+                }));
+            }
+
+            parserTask.get();
+            for (Future<?> future : futures) {
+                future.get();
+            }
         } catch (Exception e) {
             throw new RuntimeException("An error occurred during batch processing", e);
         } finally {
-            duration = (System.nanoTime() - startTime) / 1_000_000;
-            shutdownExecutor(executorService);
+            final long endTime = System.nanoTime();
+            duration = (endTime - startTime) / 1_000_000;
+
+            executorService.shutdown();
+            try {
+                if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+                    executorService.shutdownNow();
+                    if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+                        System.err.println("Executor service did not terminate");
+                    }
+                }
+            } catch (InterruptedException e) {
+                executorService.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
         }
 
         return new DatabaseActionResponse(duration, maxCpuUsage.get(), maxRamUsage.get());
-    }
-
-    private void processChunk(List<Address> chunk,
-                              DatabaseType databaseType,
-                              int batchSize,
-                              ExecutorService executorService,
-                              AtomicReference<String> maxCpuUsage,
-                              AtomicReference<String> maxRamUsage) {
-
-        List<Future<DatabaseActionResponse>> futures = new ArrayList<>();
-
-        // Process the chunk in batches
-        for (int i = 0; i < chunk.size(); i += batchSize) {
-            int start = i;
-            int end = Math.min(i + batchSize, chunk.size());
-            List<Address> batch = chunk.subList(start, end);
-
-            // Convert and submit each batch for processing
-            Future<DatabaseActionResponse> future = executorService.submit(() -> {
-                List<?> entities = convertToEntities(batch, databaseType);
-                return strategies.get(databaseType).saveAll(entities);
-            });
-
-            futures.add(future);
-        }
-
-        // Wait for all batches in this chunk to complete
-        for (Future<DatabaseActionResponse> future : futures) {
-            try {
-                DatabaseActionResponse response = future.get();
-                updateMaxMetrics(response, maxCpuUsage, maxRamUsage);
-            } catch (Exception e) {
-                throw new RuntimeException("Error processing batch", e);
-            }
-        }
-    }
-
-    private List<?> convertToEntities(List<Address> entities, DatabaseType databaseType) {
-        return switch (databaseType) {
-            case MONGODB -> entities.stream().map(Address::toMongoEntity).toList();
-            case POSTGRESQL -> entities.stream().map(Address::toPostgresEntity).toList();
-        };
     }
 
     private void updateMaxMetrics(DatabaseActionResponse batchResponse,
@@ -106,21 +120,6 @@ public class GenericServiceAddressImpl implements GenericServiceAddress {
         float maxRam = Float.parseFloat(maxRamUsage.get().replace("MB", ""));
         if (currentRam > maxRam) {
             maxRamUsage.set(batchResponse.getRamUsage());
-        }
-    }
-
-    private void shutdownExecutor(ExecutorService executorService) {
-        executorService.shutdown();
-        try {
-            if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
-                executorService.shutdownNow();
-                if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
-                    System.err.println("Executor service did not terminate");
-                }
-            }
-        } catch (InterruptedException e) {
-            executorService.shutdownNow();
-            Thread.currentThread().interrupt();
         }
     }
 }
