@@ -1,30 +1,34 @@
 package org.example.databasetesting.entities.mongodb;
 
 import jakarta.persistence.Id;
-import org.example.databasetesting.entities.mongodb.models.UserModel;
+import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 
 @Document(collection = "products")
 public class ProductDocument {
     @Id
-    private String id;
+    private ObjectId id;
     private String name;
     private String description;
-    private String categoryName;
+    @DBRef
+    private CategoryDocument category;
     private double startPrice;
     private LocalDate startDate;
     private LocalDate endDate;
     private String status;
-    private UserModel userModel;
+    @DBRef
+    private UserDocument seller;
 
-    public String getId() {
+    public ObjectId getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(ObjectId id) {
         this.id = id;
     }
 
@@ -44,12 +48,12 @@ public class ProductDocument {
         this.description = description;
     }
 
-    public String getCategoryName() {
-        return categoryName;
+    public CategoryDocument getCategory() {
+        return category;
     }
 
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
+    public void setCategory(CategoryDocument category) {
+        this.category = category;
     }
 
     public double getStartPrice() {
@@ -84,11 +88,11 @@ public class ProductDocument {
         this.status = status;
     }
 
-    public UserModel getUserModel() {
-        return userModel;
+    public UserDocument getSeller() {
+        return seller;
     }
 
-    public void setUserModel(UserModel userModel) {
-        this.userModel = userModel;
+    public void setSeller(UserDocument seller) {
+        this.seller = seller;
     }
 }

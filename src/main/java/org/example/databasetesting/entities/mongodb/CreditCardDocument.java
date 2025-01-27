@@ -1,12 +1,27 @@
-package org.example.databasetesting.entities.mongodb.models;
+package org.example.databasetesting.entities.mongodb;
+
+import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 
-public class CreditCardModel {
+@Document(collection = "credit_cards")
+public class CreditCardDocument {
+    @Id
+    private ObjectId id;
     private String name;
     private String cardNumber;
     private String cvv;
     private LocalDate expirationDate;
+
+    public ObjectId getId() {
+        return id;
+    }
+
+    public void setId(ObjectId id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;

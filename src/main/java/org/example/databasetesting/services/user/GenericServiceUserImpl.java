@@ -1,8 +1,8 @@
-package org.example.databasetesting.services.address;
+package org.example.databasetesting.services.user;
 
-import org.example.databasetesting.requests.Address;
+import org.example.databasetesting.requests.User;
 import org.example.databasetesting.response.DatabaseActionResponse;
-import org.example.databasetesting.services.ActionsService;
+import org.example.databasetesting.services.ActionServiceComplex;
 import org.example.databasetesting.utils.CSVUtil;
 import org.example.databasetesting.utils.DatabaseType;
 import org.springframework.stereotype.Service;
@@ -13,21 +13,21 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
-public class GenericServiceAddressImpl implements GenericServiceAddress {
+public class GenericServiceUserImpl implements GenericServiceUser {
     private static final int PROCESSING_THREADS = 4;
-    private static final int CHUNK_SIZE = 1000000;
-    private final EnumMap<DatabaseType, ActionsService> strategies = new EnumMap<>(DatabaseType.class);
+    private static final int CHUNK_SIZE = 2500000;
+    private final EnumMap<DatabaseType, ActionServiceComplex> strategies = new EnumMap<>(DatabaseType.class);
 
-    public GenericServiceAddressImpl(
-            PostgreSQLServiceAddressImpl postgreSQLService,
-            MongoDBServiceAddressImpl mongoDBService
+    public GenericServiceUserImpl(
+            PostgreSQLServiceUserImpl postgreSQLService,
+            MongoDBServiceUserImpl mongoDBService
     ) {
         strategies.put(DatabaseType.POSTGRESQL, postgreSQLService);
         strategies.put(DatabaseType.MONGODB, mongoDBService);
     }
 
     @Override
-    public DatabaseActionResponse saveAllSimple(MultipartFile file, DatabaseType databaseType, int batchSize) {
+    public DatabaseActionResponse saveAllComplex(MultipartFile file, DatabaseType databaseType, int batchSize) {
         final long startTime = System.nanoTime();
         AtomicReference<String> maxCpuUsage = new AtomicReference<>("0%");
         AtomicReference<String> maxRamUsage = new AtomicReference<>("0MB");
@@ -37,7 +37,7 @@ public class GenericServiceAddressImpl implements GenericServiceAddress {
 
         try {
             // Process each chunk sequentially
-            CSVUtil.parseCSVInChunks(file, Address.class, CHUNK_SIZE, chunk -> {
+            CSVUtil.parseCSVInChunks(file, User.class, CHUNK_SIZE, chunk -> {
                 processChunk(chunk, databaseType, batchSize, executorService, maxCpuUsage, maxRamUsage);
             });
 
@@ -51,7 +51,7 @@ public class GenericServiceAddressImpl implements GenericServiceAddress {
         return new DatabaseActionResponse(duration, maxCpuUsage.get(), maxRamUsage.get());
     }
 
-    private void processChunk(List<Address> chunk,
+    private void processChunk(List<User> chunk,
                               DatabaseType databaseType,
                               int batchSize,
                               ExecutorService executorService,
@@ -64,11 +64,10 @@ public class GenericServiceAddressImpl implements GenericServiceAddress {
         for (int i = 0; i < chunk.size(); i += batchSize) {
             int start = i;
             int end = Math.min(i + batchSize, chunk.size());
-            List<Address> batch = chunk.subList(start, end);
+            List<User> batch = chunk.subList(start, end);
 
-            // Convert and submit each batch for processing
             Future<DatabaseActionResponse> future = executorService.submit(() -> {
-                List<?> entities = convertToEntities(batch, databaseType);
+                Map<String, List<?>> entities = convertToEntities(batch, databaseType);
                 return strategies.get(databaseType).saveAll(entities);
             });
 
@@ -86,11 +85,29 @@ public class GenericServiceAddressImpl implements GenericServiceAddress {
         }
     }
 
-    private List<?> convertToEntities(List<Address> entities, DatabaseType databaseType) {
-        return switch (databaseType) {
-            case MONGODB -> entities.stream().map(Address::toMongoEntity).toList();
-            case POSTGRESQL -> entities.stream().map(Address::toPostgresEntity).toList();
-        };
+    private Map<String, List<?>> convertToEntities(List<User> users, DatabaseType databaseType) {
+        if (databaseType == DatabaseType.MONGODB) {
+            List<Object> addresses = new ArrayList<>();
+            List<Object> creditCards = new ArrayList<>();
+            List<Object> usersList = new ArrayList<>();
+
+            users.forEach(user -> {
+                Map<String, Object> mongoDocument = user.toMongoDocument();
+                addresses.add(mongoDocument.get("address"));
+                creditCards.add(mongoDocument.get("creditCard"));
+                usersList.add(mongoDocument.get("user"));
+            });
+
+            Map<String, List<?>> resultMap = new HashMap<>();
+            resultMap.put("address", addresses);
+            resultMap.put("creditCard", creditCards);
+            resultMap.put("user", usersList);
+
+            return resultMap;
+        } else if (databaseType == DatabaseType.POSTGRESQL) {
+            return Map.of("users", users.stream().map(User::toPostgresEntity).toList());
+        }
+        return Collections.emptyMap();
     }
 
     private void updateMaxMetrics(DatabaseActionResponse batchResponse,

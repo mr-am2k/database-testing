@@ -1,25 +1,29 @@
 package org.example.databasetesting.entities.mongodb;
 
 import jakarta.persistence.Id;
+import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
-import java.util.UUID;
+
 
 @Document(collection = "bids")
 public class BidDocument {
     @Id
-    private String id;
+    private ObjectId id;
     private double amount;
     private LocalDate bidTime;
-    private UUID productId;
-    private UUID userId;
+    @DBRef
+    private ProductDocument product;
+    @DBRef
+    private UserDocument user;
 
-    public String getId() {
+    public ObjectId getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(ObjectId id) {
         this.id = id;
     }
 
@@ -39,19 +43,19 @@ public class BidDocument {
         this.bidTime = bidTime;
     }
 
-    public UUID getProductId() {
-        return productId;
+    public ProductDocument getProduct() {
+        return product;
     }
 
-    public void setProductId(UUID productId) {
-        this.productId = productId;
+    public void setProduct(ProductDocument product) {
+        this.product = product;
     }
 
-    public UUID getUserId() {
-        return userId;
+    public UserDocument getUser() {
+        return user;
     }
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
+    public void setUser(UserDocument user) {
+        this.user = user;
     }
 }

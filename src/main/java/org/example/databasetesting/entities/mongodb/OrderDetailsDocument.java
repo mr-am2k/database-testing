@@ -1,69 +1,82 @@
 package org.example.databasetesting.entities.mongodb;
 
 import jakarta.persistence.Id;
-import org.example.databasetesting.entities.mongodb.models.AddressModel;
-import org.example.databasetesting.entities.mongodb.models.CreditCardModel;
-import org.example.databasetesting.entities.mongodb.models.ProductModel;
-import org.example.databasetesting.entities.mongodb.models.UserModel;
+import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Document(collection = "order_details")
 public class OrderDetailsDocument {
     @Id
-    private String id;
-    private ProductModel product;
-    private UserModel winner;
-    private AddressModel shippingAddress;
-    private CreditCardModel paymentMethod;
+    private ObjectId id;
+    @DBRef
+    private ProductDocument product;
+    @DBRef
+    private CategoryDocument category;
+    @DBRef
+    private UserDocument winner;
+    @DBRef
+    private AddressDocument shippingAddress;
+    @DBRef
+    private CreditCardDocument creditCard;
     private LocalDate orderDate;
 
-    public String getId() {
+    public ObjectId getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(ObjectId id) {
         this.id = id;
     }
 
-    public ProductModel getProduct() {
+    public ProductDocument getProduct() {
         return product;
     }
 
-    public void setProduct(ProductModel product) {
+    public void setProduct(ProductDocument product) {
         this.product = product;
     }
 
-    public UserModel getWinner() {
+    public CategoryDocument getCategory() {
+        return category;
+    }
+
+    public void setCategory(CategoryDocument category) {
+        this.category = category;
+    }
+
+    public UserDocument getWinner() {
         return winner;
     }
 
-    public void setWinner(UserModel winner) {
+    public void setWinner(UserDocument winner) {
         this.winner = winner;
     }
 
-    public AddressModel getShippingAddress() {
+    public AddressDocument getShippingAddress() {
         return shippingAddress;
     }
 
-    public void setShippingAddress(AddressModel shippingAddress) {
+    public void setShippingAddress(AddressDocument shippingAddress) {
         this.shippingAddress = shippingAddress;
     }
 
-    public CreditCardModel getPaymentMethod() {
-        return paymentMethod;
+    public CreditCardDocument getCreditCard() {
+        return creditCard;
     }
 
-    public void setPaymentMethod(CreditCardModel paymentMethod) {
-        this.paymentMethod = paymentMethod;
+    public void setCreditCard(CreditCardDocument creditCard) {
+        this.creditCard = creditCard;
     }
 
     public LocalDate getOrderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(LocalDate orderLocalDate) {
-        this.orderDate = orderLocalDate;
+    public void setOrderDate(LocalDate orderDate) {
+        this.orderDate = orderDate;
     }
 }

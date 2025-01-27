@@ -1,32 +1,32 @@
 package org.example.databasetesting.entities.mongodb;
 
 import jakarta.persistence.Id;
-import org.example.databasetesting.entities.mongodb.models.AddressModel;
-import org.example.databasetesting.entities.mongodb.models.CreditCardModel;
+import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.util.UUID;
 
 @Document(collection = "users")
 public class UserDocument {
     @Id
-    private String id;
+    private ObjectId id;
     private String firstName;
     private String lastName;
     private String email;
     private String password;
     private String status;
-    private AddressModel address;
-    private CreditCardModel creditCard;
+    @DBRef
+    private AddressDocument addressDocument;
+    @DBRef
+    private CreditCardDocument creditCardDocument;
 
     public UserDocument() {
     }
 
-    public String getId() {
+    public ObjectId getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(ObjectId id) {
         this.id = id;
     }
 
@@ -70,19 +70,19 @@ public class UserDocument {
         this.status = status;
     }
 
-    public AddressModel getAddress() {
-        return address;
+    public AddressDocument getAddressDocument() {
+        return addressDocument;
     }
 
-    public void setAddress(AddressModel address) {
-        this.address = address;
+    public void setAddressDocument(AddressDocument addressDocument) {
+        this.addressDocument = addressDocument;
     }
 
-    public CreditCardModel getCreditCard() {
-        return creditCard;
+    public CreditCardDocument getCreditCardDocument() {
+        return creditCardDocument;
     }
 
-    public void setCreditCard(CreditCardModel creditCard) {
-        this.creditCard = creditCard;
+    public void setCreditCardDocument(CreditCardDocument creditCardDocument) {
+        this.creditCardDocument = creditCardDocument;
     }
 }

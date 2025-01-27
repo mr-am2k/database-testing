@@ -1,30 +1,29 @@
-package org.example.databasetesting.services.address;
+package org.example.databasetesting.services.user;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
-import org.example.databasetesting.entities.postgresql.AddressEntity;
-import org.example.databasetesting.repositories.postgresql.PostgresAddressRepository;
+import org.example.databasetesting.entities.postgresql.UserEntity;
+import org.example.databasetesting.repositories.postgresql.PostgresUserRepository;
 import org.example.databasetesting.response.DatabaseActionResponse;
-import org.example.databasetesting.services.ActionsService;
+import org.example.databasetesting.services.ActionServiceComplex;
 import org.springframework.stereotype.Service;
 
-
 import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
-public class PostgreSQLServiceAddressImpl implements ActionsService<AddressEntity> {
+public class PostgreSQLServiceUserImpl implements ActionServiceComplex<UserEntity> {
     private final MeterRegistry meterRegistry;
-    private final PostgresAddressRepository postgresAddressRepository;
+    private final PostgresUserRepository postgresUserRepository;
     private final ThreadLocal<List<Long>> cpuMeasurements = ThreadLocal.withInitial(CopyOnWriteArrayList::new);
     private final ThreadLocal<List<Long>> memoryMeasurements = ThreadLocal.withInitial(CopyOnWriteArrayList::new);
 
-
-    public PostgreSQLServiceAddressImpl(MeterRegistry meterRegistry, PostgresAddressRepository postgresAddressRepository) {
+    public PostgreSQLServiceUserImpl(MeterRegistry meterRegistry, PostgresUserRepository postgresUserRepository) {
         this.meterRegistry = meterRegistry;
-        this.postgresAddressRepository = postgresAddressRepository;
+        this.postgresUserRepository = postgresUserRepository;
     }
 
     private synchronized void recordMetrics() {
@@ -51,19 +50,22 @@ public class PostgreSQLServiceAddressImpl implements ActionsService<AddressEntit
 
     @Override
     @Transactional
-    public DatabaseActionResponse saveAll(List<AddressEntity> entities) {
+    public DatabaseActionResponse saveAll(Map<String, List<?>> entities) {
         cpuMeasurements.get().clear();
         memoryMeasurements.get().clear();
 
         recordMetrics();
 
-        this.postgresAddressRepository.saveAll(entities);
+        List<UserEntity> users = (List<UserEntity>) entities.get("users");
+        postgresUserRepository.saveAll(users);
+
+        recordMetrics();
 
         double avgCpu = calculateAverage(cpuMeasurements.get());
         double avgMemory = calculateAverage(memoryMeasurements.get());
 
-        meterRegistry.gauge("postgres.address.avgCpuUsage", avgCpu);
-        meterRegistry.gauge("postgres.address.avgMemoryUsage", avgMemory);
+        meterRegistry.gauge("postgres.operation.avgCpuUsage", avgCpu);
+        meterRegistry.gauge("postgres.operation.avgMemoryUsage", avgMemory);
 
         return new DatabaseActionResponse(0,
                 String.format("%.2f%%", avgCpu / 100),

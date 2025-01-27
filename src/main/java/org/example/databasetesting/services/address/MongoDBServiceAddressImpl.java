@@ -8,17 +8,16 @@ import org.example.databasetesting.services.ActionsService;
 import org.springframework.stereotype.Service;
 
 import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 
 @Service
 public class MongoDBServiceAddressImpl implements ActionsService<AddressDocument> {
     private final MongoAddressRepository mongoAddressRepository;
     private final MeterRegistry meterRegistry;
+    private final ThreadLocal<List<Long>> cpuMeasurements = ThreadLocal.withInitial(CopyOnWriteArrayList::new);
+    private final ThreadLocal<List<Long>> memoryMeasurements = ThreadLocal.withInitial(CopyOnWriteArrayList::new);
 
     public MongoDBServiceAddressImpl(MongoAddressRepository mongoAddressRepository, MeterRegistry meterRegistry) {
         this.mongoAddressRepository = mongoAddressRepository;
@@ -33,26 +32,37 @@ public class MongoDBServiceAddressImpl implements ActionsService<AddressDocument
         return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
     }
 
+    private synchronized void recordMetrics() {
+        cpuMeasurements.get().add(getCpuUsage());
+        memoryMeasurements.get().add(getMemoryUsage());
+    }
+
+    private double calculateAverage(List<Long> measurements) {
+        synchronized (measurements) {
+            return measurements.stream()
+                    .mapToLong(Long::longValue)
+                    .average()
+                    .orElse(0.0);
+        }
+    }
+
     @Override
     public DatabaseActionResponse saveAll(List<AddressDocument> entities) {
-        long startCpu = getCpuUsage();
-        long startMemory = getMemoryUsage();
+        cpuMeasurements.get().clear();
+        memoryMeasurements.get().clear();
+
+        recordMetrics();
 
         mongoAddressRepository.saveAll(entities);
 
-        long endCpu = getCpuUsage();
-        long endMemory = getMemoryUsage();
+        double avgCpu = calculateAverage(cpuMeasurements.get());
+        double avgMemory = calculateAverage(memoryMeasurements.get());
 
-        long cpuDiff = endCpu - startCpu;
-        long memoryDiff = endMemory - startMemory;
+        meterRegistry.gauge("mongodb.address.avgCpuUsage", avgCpu);
+        meterRegistry.gauge("mongodb.address.avgMemoryUsage", avgMemory);
 
-        meterRegistry.gauge("mongodb.operation.cpuUsage", cpuDiff);
-        meterRegistry.gauge("mongodb.operation.memoryUsage", memoryDiff);
-
-        String cpuUsageFormatted = (float) (cpuDiff / 100) + "%";
-        float ramUsageMB = (float) memoryDiff / 1_048_576;
-        String ramUsageFormatted = ramUsageMB + "MB";
-
-        return new DatabaseActionResponse(0, cpuUsageFormatted, ramUsageFormatted);
+        return new DatabaseActionResponse(0,
+                String.format("%.2f%%", avgCpu / 100),
+                String.format("%.2fMB", avgMemory / 1_048_576));
     }
 }

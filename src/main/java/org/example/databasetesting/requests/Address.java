@@ -1,9 +1,11 @@
 package org.example.databasetesting.requests;
 
+import org.bson.types.ObjectId;
 import org.example.databasetesting.entities.mongodb.AddressDocument;
 import org.example.databasetesting.entities.postgresql.AddressEntity;
 
 public class Address {
+    private ObjectId id;
     private String address;
     private String city;
     private String country;
