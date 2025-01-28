@@ -15,9 +15,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service
 public class GenericServiceUserImpl implements GenericServiceUser {
     private static final int PROCESSING_THREADS = 4;
-    private static final int CHUNK_SIZE = 2500000;
     private final EnumMap<DatabaseType, ActionServiceComplex> strategies = new EnumMap<>(DatabaseType.class);
-    private final Semaphore processingSemaphore = new Semaphore(PROCESSING_THREADS);
 
     public GenericServiceUserImpl(
             PostgreSQLServiceUserImpl postgreSQLService,
@@ -42,30 +40,28 @@ public class GenericServiceUserImpl implements GenericServiceUser {
                 new ThreadPoolExecutor.CallerRunsPolicy()
         );
 
-        CountDownLatch completionLatch = new CountDownLatch(1);
-        List<CompletableFuture<Void>> allFutures = new ArrayList<>();
-
         try {
-            CSVUtil.parseCSVInBatches(file, User.class, CHUNK_SIZE, chunk -> {
-                processingSemaphore.acquireUninterruptibly();
-                CompletableFuture<Void> chunkFuture = processChunkNonBlocking(
-                        chunk, databaseType, batchSize, executorService, maxCpuUsage, maxRamUsage
-                ).whenComplete((result, ex) -> processingSemaphore.release());
-                allFutures.add(chunkFuture);
-            });
+            // Parse all data at once and split into batches
+            List<List<User>> batches = CSVUtil.parseCSV(file, User.class, batchSize);
 
-            // Start a separate thread to monitor completion
-            CompletableFuture.runAsync(() -> {
-                try {
-                    CompletableFuture.allOf(allFutures.toArray(new CompletableFuture[0])).join();
-                    completionLatch.countDown();
-                } catch (Exception e) {
-                    throw new CompletionException(e);
-                }
-            });
+            // Process all batches in parallel
+            List<CompletableFuture<DatabaseActionResponse>> batchFutures = new ArrayList<>();
 
-            // Wait for all processing to complete
-            completionLatch.await();
+            for (List<User> batch : batches) {
+                CompletableFuture<DatabaseActionResponse> batchFuture = CompletableFuture.supplyAsync(() -> {
+                    Map<String, List<?>> entities = convertToEntities(batch, databaseType);
+                    return strategies.get(databaseType).saveAll(entities);
+                }, executorService).whenComplete((response, ex) -> {
+                    if (response != null) {
+                        updateMaxMetrics(response, maxCpuUsage, maxRamUsage);
+                    }
+                });
+
+                batchFutures.add(batchFuture);
+            }
+
+            // Wait for all batches to complete
+            CompletableFuture.allOf(batchFutures.toArray(new CompletableFuture[0])).join();
 
         } catch (Exception e) {
             throw new RuntimeException("An error occurred during batch processing", e);
@@ -75,37 +71,6 @@ public class GenericServiceUserImpl implements GenericServiceUser {
 
         long duration = (System.nanoTime() - startTime) / 1_000_000;
         return new DatabaseActionResponse(duration, maxCpuUsage.get(), maxRamUsage.get());
-    }
-
-    private CompletableFuture<Void> processChunkNonBlocking(
-            List<User> chunk,
-            DatabaseType databaseType,
-            int batchSize,
-            ExecutorService executorService,
-            AtomicReference<String> maxCpuUsage,
-            AtomicReference<String> maxRamUsage) {
-
-        List<CompletableFuture<DatabaseActionResponse>> batchFutures = new ArrayList<>();
-
-        // Process batches within the chunk
-        for (int i = 0; i < chunk.size(); i += batchSize) {
-            int start = i;
-            int end = Math.min(i + batchSize, chunk.size());
-            List<User> batch = chunk.subList(start, end);
-
-            CompletableFuture<DatabaseActionResponse> batchFuture = CompletableFuture.supplyAsync(() -> {
-                Map<String, List<?>> entities = convertToEntities(batch, databaseType);
-                return strategies.get(databaseType).saveAll(entities);
-            }, executorService).whenComplete((response, ex) -> {
-                if (response != null) {
-                    updateMaxMetrics(response, maxCpuUsage, maxRamUsage);
-                }
-            });
-
-            batchFutures.add(batchFuture);
-        }
-
-        return CompletableFuture.allOf(batchFutures.toArray(new CompletableFuture[0]));
     }
 
     private Map<String, List<?>> convertToEntities(List<User> users, DatabaseType databaseType) {

@@ -7,42 +7,34 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class CSVUtil {
 
-    public static <T> void parseCSVInBatches(MultipartFile file, Class<T> clazz, int batchSize, Consumer<List<T>> batchProcessor) {
+    public static <T> List<List<T>> parseCSV(MultipartFile file, Class<T> clazz, int batchSize) {
+        List<List<T>> batches = new ArrayList<>();
+
         try (CSVReader csvReader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
             String[] headers = csvReader.readNext();
             if (headers == null) {
                 throw new IllegalArgumentException("CSV file is empty!");
             }
 
-            List<T> currentBatch = new ArrayList<>(batchSize);
+            List<T> allRecords = new ArrayList<>();
             String[] values;
 
+            // Read all records into memory
             while ((values = csvReader.readNext()) != null) {
                 T instance = createInstance(clazz, headers, values);
-                currentBatch.add(instance);
-
-                if (currentBatch.size() >= batchSize) {
-                    try {
-                        batchProcessor.accept(new ArrayList<>(currentBatch)); // Blocks if queue is full
-                    } catch (Exception e) {
-                        throw new RuntimeException("Error during batch processing", e);
-                    }
-                    currentBatch.clear();
-                }
+                allRecords.add(instance);
             }
 
-            // Process any remaining records
-            if (!currentBatch.isEmpty()) {
-                try {
-                    batchProcessor.accept(new ArrayList<>(currentBatch));
-                } catch (Exception e) {
-                    throw new RuntimeException("Error during batch processing", e);
-                }
+            // Split into batches
+            for (int i = 0; i < allRecords.size(); i += batchSize) {
+                int end = Math.min(i + batchSize, allRecords.size());
+                batches.add(allRecords.subList(i, end));
             }
+
+            return batches;
         } catch (Exception e) {
             throw new RuntimeException("An error has occurred while processing file: " + e.getMessage(), e);
         }

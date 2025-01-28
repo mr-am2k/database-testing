@@ -34,53 +34,22 @@ public class GenericServiceAddressImpl implements GenericServiceAddress {
 
         ExecutorService executorService = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
         List<Future<?>> futures = new ArrayList<>();
-        BlockingQueue<List<Address>> batchQueue = new LinkedBlockingQueue<>(NUMBER_OF_THREADS);
 
         try {
-            Future<?> parserTask = executorService.submit(() -> {
-                try {
-                    CSVUtil.parseCSVInBatches(file, Address.class, batchSize, batch -> {
-                        try {
-                            batchQueue.put(batch);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            throw new RuntimeException("Thread interrupted while adding to batch queue", e);
-                        }
-                    });
+            List<List<Address>> batches = CSVUtil.parseCSV(file, Address.class, batchSize);
 
-                    for (int i = 0; i < NUMBER_OF_THREADS; i++) {
-                        batchQueue.put(Collections.emptyList());
-                    }
-                } catch (RuntimeException | InterruptedException e) {
-                    throw new RuntimeException("Error during CSV parsing", e);
-                }
-            });
-
-            for (int i = 0; i < NUMBER_OF_THREADS; i++) {
+            for (List<Address> batch : batches) {
                 futures.add(executorService.submit(() -> {
-                    try {
-                        while (true) {
-                            List<Address> batch = batchQueue.take();
-                            if (batch.isEmpty()) {
-                                break;
-                            }
+                    var entityBatch = switch (databaseType) {
+                        case MONGODB -> batch.stream().map(Address::toMongoEntity).toList();
+                        case POSTGRESQL -> batch.stream().map(Address::toPostgresEntity).toList();
+                    };
 
-                            var entityBatch = switch (databaseType) {
-                                case MONGODB -> batch.stream().map(Address::toMongoEntity).toList();
-                                case POSTGRESQL -> batch.stream().map(Address::toPostgresEntity).toList();
-                            };
-
-                            DatabaseActionResponse batchResponse = strategies.get(databaseType).saveAll(entityBatch);
-                            updateMaxMetrics(batchResponse, maxCpuUsage, maxRamUsage);
-                        }
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        throw new RuntimeException("Batch processing thread interrupted", e);
-                    }
+                    DatabaseActionResponse batchResponse = strategies.get(databaseType).saveAll(entityBatch);
+                    updateMaxMetrics(batchResponse, maxCpuUsage, maxRamUsage);
                 }));
             }
 
-            parserTask.get();
             for (Future<?> future : futures) {
                 future.get();
             }
