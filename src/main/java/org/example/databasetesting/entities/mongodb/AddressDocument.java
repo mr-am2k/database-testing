@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.UUID;
 
-@Document(collection = "addresses")
+@Document(collection = "address")
 public class AddressDocument {
     @Id
     private ObjectId id;

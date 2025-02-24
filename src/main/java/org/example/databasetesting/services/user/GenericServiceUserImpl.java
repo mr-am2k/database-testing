@@ -31,14 +31,7 @@ public class GenericServiceUserImpl implements GenericServiceUser {
         AtomicReference<String> maxCpuUsage = new AtomicReference<>("0%");
         AtomicReference<String> maxRamUsage = new AtomicReference<>("0MB");
 
-        ExecutorService executorService = new ThreadPoolExecutor(
-                PROCESSING_THREADS,
-                PROCESSING_THREADS,
-                0L,
-                TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>(PROCESSING_THREADS * 2),
-                new ThreadPoolExecutor.CallerRunsPolicy()
-        );
+        ExecutorService executorService = Executors.newFixedThreadPool(PROCESSING_THREADS);
 
         try {
             // Parse all data at once and split into batches
