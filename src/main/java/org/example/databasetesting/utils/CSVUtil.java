@@ -1,14 +1,30 @@
 package org.example.databasetesting.utils;
 
 import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CSVUtil {
+    private static final String RESULTS_CSV_FILENAME = "insert.csv";
+    private static final String RESOURCES_PATH = "src/main/resources/results";
+    private static final String[] CSV_HEADERS = {
+            "databaseType", "numberOfRecords", "batchSize", "caching",
+            "numberOfThreads", "queryType", "executionTime", "ramUsage", "cpuUsage"
+    };
 
     public static <T> List<List<T>> parseCSV(MultipartFile file, Class<T> clazz, int batchSize) {
         List<List<T>> batches = new ArrayList<>();
@@ -68,5 +84,114 @@ public class CSVUtil {
             return Boolean.parseBoolean(value);
         }
         return null;
+    }
+
+    /**
+     * Saves database operation results to a CSV file in the resources directory.
+     *
+     * @param databaseType The type of database (e.g., POSTGRESQL, MONGODB)
+     * @param numberOfRecords Total number of records processed
+     * @param batchSize Size of each processing batch
+     * @param caching Caching strategy used
+     * @param numberOfThreads Number of threads used for processing
+     * @param queryType Type of query executed
+     * @param executionTime Total execution time in milliseconds
+     * @param ramUsage Peak RAM usage
+     * @param cpuUsage Peak CPU usage
+     */
+    public static void saveResultToCSV(
+            String databaseType,
+            int numberOfRecords,
+            int batchSize,
+            String caching,
+            int numberOfThreads,
+            String queryType,
+            long executionTime,
+            String ramUsage,
+            String cpuUsage) {
+
+        try {
+            Path resourcesDir = Paths.get(RESOURCES_PATH);
+            if (!Files.exists(resourcesDir)) {
+                Files.createDirectories(resourcesDir);
+            }
+
+            Path csvFilePath = resourcesDir.resolve(RESULTS_CSV_FILENAME);
+            boolean fileExists = Files.exists(csvFilePath);
+
+            Path tempFile = Files.createTempFile("temp-", "-results.csv");
+
+            if (fileExists) {
+                Files.copy(csvFilePath, tempFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            try (CSVWriter writer = new CSVWriter(new FileWriter(tempFile.toFile(), fileExists))) {
+                if (!fileExists || Files.size(csvFilePath) == 0) {
+                    writer.writeNext(CSV_HEADERS);
+                }
+
+                String[] dataRow = {
+                        databaseType,
+                        String.valueOf(numberOfRecords),
+                        String.valueOf(batchSize),
+                        caching,
+                        String.valueOf(numberOfThreads),
+                        queryType,
+                        String.valueOf(executionTime),
+                        ramUsage,
+                        cpuUsage
+                };
+
+                writer.writeNext(dataRow);
+            }
+
+            Files.move(tempFile, csvFilePath, StandardCopyOption.REPLACE_EXISTING);
+
+            System.out.println("Results successfully saved to " + csvFilePath.toAbsolutePath());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to save results to CSV: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Finds and loads CSV file from various locations including resources folder
+     *
+     * @param filename Name of the CSV file to find
+     * @return File object if found, null otherwise
+     */
+    private static File findCsvFile(String filename) {
+        try {
+            try {
+                Resource resource = new ClassPathResource(filename);
+                if (resource.exists()) {
+                    return resource.getFile();
+                }
+            } catch (Exception e) {
+            }
+
+            try {
+                File file = ResourceUtils.getFile("classpath:" + filename);
+                if (file.exists()) {
+                    return file;
+                }
+            } catch (Exception e) {
+            }
+
+            Path resourcePath = Paths.get(RESOURCES_PATH, filename);
+            if (Files.exists(resourcePath)) {
+                return resourcePath.toFile();
+            }
+
+            File currentDirFile = new File(filename);
+            if (currentDirFile.exists()) {
+                return currentDirFile;
+            }
+
+            return new File(RESOURCES_PATH + filename);
+
+        } catch (Exception e) {
+            System.err.println("Error finding CSV file: " + e.getMessage());
+            return new File(RESOURCES_PATH + filename);
+        }
     }
 }

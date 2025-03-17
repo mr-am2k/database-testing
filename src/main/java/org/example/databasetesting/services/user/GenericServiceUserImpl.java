@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class GenericServiceUserImpl implements GenericServiceUser {
-    private static final int PROCESSING_THREADS = 4;
+    public static final int PROCESSING_THREADS = 4;
     private final EnumMap<DatabaseType, ActionServiceComplex> strategies = new EnumMap<>(DatabaseType.class);
 
     public GenericServiceUserImpl(

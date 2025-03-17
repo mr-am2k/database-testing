@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class GenericServiceAddressImpl implements GenericServiceAddress {
-    private static final int NUMBER_OF_THREADS = 4;
+    public static final int NUMBER_OF_THREADS = 4;
     private final EnumMap<DatabaseType, ActionsService> strategies = new EnumMap<>(DatabaseType.class);
 
     public GenericServiceAddressImpl(

@@ -203,9 +203,9 @@ sh.shardCollection("database-testing-sharding.address", { "city": "hashed" })
 #Set sharding on 100mb
 
 use config
-db.settings.update(
+db.settings.updateOne(
   { _id: "chunksize" },
-  { $set: { value: 100 } } // Chunk sizes set to 100 MB
+  { $set: { value: 0.01 } } // Chunk sizes set to 100 MB
 )
 
 java -Xms512m -Xmx8g -jar ./target/database-testing-0.0.1-SNAPSHOT.jar
