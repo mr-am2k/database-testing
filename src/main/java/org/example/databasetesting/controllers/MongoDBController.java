@@ -35,7 +35,7 @@ public class MongoDBController {
             @RequestParam("queryType") String queryType) throws IOException {
         DatabaseActionResponse response = genericServiceAddress.saveAllSimple(file, DatabaseType.MONGODB, batchSize);
 
-        CSVUtil.saveResultToCSV(
+        CSVUtil.saveInsertResultToCSV(
                 databaseType,
                 numberOfRecords,
                 batchSize,
@@ -60,7 +60,7 @@ public class MongoDBController {
             @RequestParam("queryType") String queryType) throws IOException {
         DatabaseActionResponse response = genericServiceUser.saveAllComplex(file, DatabaseType.MONGODB, batchSize);
 
-        CSVUtil.saveResultToCSV(
+        CSVUtil.saveInsertResultToCSV(
                 databaseType,
                 numberOfRecords,
                 batchSize,
@@ -73,5 +73,93 @@ public class MongoDBController {
         );
 
         return response;
+    }
+
+    @GetMapping(path = "/simple-count")
+    public DatabaseActionResponse getSimpleCount(
+            @RequestParam("numberOfRecords") String numberOfRecords,
+            @RequestParam("caching") String caching,
+            @RequestParam("indexing") String indexing) {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceAddress.getCount(DatabaseType.MONGODB);
+
+        CSVUtil.saveReadResultsToCSV(
+                DatabaseType.MONGODB.toString(),
+                numberOfRecords,
+                caching,
+                "COUNT",
+                "SIMPLE",
+                indexing,
+                databaseActionResponse.getTime(),
+                databaseActionResponse.getRamUsage(),
+                databaseActionResponse.getCpuUsage()
+        );
+
+        return databaseActionResponse;
+    }
+
+    @GetMapping(path = "/simple-aggregation")
+    public DatabaseActionResponse getSimpleAggregation(
+            @RequestParam("numberOfRecords") String numberOfRecords,
+            @RequestParam("caching") String caching,
+            @RequestParam("indexing") String indexing) {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceAddress.getAggregation(DatabaseType.MONGODB);
+
+        CSVUtil.saveReadResultsToCSV(
+                DatabaseType.MONGODB.toString(),
+                numberOfRecords,
+                caching,
+                "AGGREGATION",
+                "SIMPLE",
+                indexing,
+                databaseActionResponse.getTime(),
+                databaseActionResponse.getRamUsage(),
+                databaseActionResponse.getCpuUsage()
+        );
+
+        return databaseActionResponse;
+    }
+
+    @GetMapping(path = "/complex-count")
+    public DatabaseActionResponse getComplexCount(
+            @RequestParam("numberOfRecords") String numberOfRecords,
+            @RequestParam("caching") String caching,
+            @RequestParam("indexing") String indexing) {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceUser.getCount(DatabaseType.MONGODB);
+
+        CSVUtil.saveReadResultsToCSV(
+                DatabaseType.MONGODB.toString(),
+                numberOfRecords,
+                caching,
+                "COUNT",
+                "COMPLEX",
+                indexing,
+                databaseActionResponse.getTime(),
+                databaseActionResponse.getRamUsage(),
+                databaseActionResponse.getCpuUsage()
+        );
+
+        return databaseActionResponse;
+    }
+
+    @GetMapping(path = "/complex-aggregation")
+    public DatabaseActionResponse getComplexAggregation(
+            @RequestParam("numberOfRecords") String numberOfRecords,
+            @RequestParam("caching") String caching,
+            @RequestParam("indexing") String indexing) {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceUser.getAggregation(DatabaseType.MONGODB);
+
+        CSVUtil.saveReadResultsToCSV(
+                DatabaseType.MONGODB.toString(),
+                numberOfRecords,
+                caching,
+                "AGGREGATION",
+                "COMPLEX",
+                indexing,
+                databaseActionResponse.getTime(),
+                databaseActionResponse.getRamUsage(),
+                databaseActionResponse.getCpuUsage()
+        );
+
+        return databaseActionResponse;
     }
 }

@@ -7,4 +7,8 @@ import java.util.Map;
 
 public interface ActionServiceComplex<T> {
     DatabaseActionResponse saveAll(Map<String, List<?>> entities);
+
+    DatabaseActionResponse getCount();
+
+    DatabaseActionResponse getAggregation();
 }

@@ -1,6 +1,5 @@
 package org.example.databasetesting.controllers;
 
-import org.example.databasetesting.repositories.postgresql.PostgresAddressRepository;
 import org.example.databasetesting.repositories.postgresql.PostgresUserRepository;
 import org.example.databasetesting.response.DatabaseActionResponse;
 import org.example.databasetesting.services.address.GenericServiceAddress;
@@ -21,12 +20,10 @@ import static org.example.databasetesting.services.user.GenericServiceUserImpl.P
 public class PostgreSQLController {
     private final GenericServiceAddress genericServiceAddress;
     private final GenericServiceUser genericServiceUser;
-    private final PostgresUserRepository postgresUserRepository;
 
-    public PostgreSQLController(GenericServiceAddress genericServiceAddress, GenericServiceUser genericServiceUser, PostgresUserRepository postgresUserRepository) {
+    public PostgreSQLController(GenericServiceAddress genericServiceAddress, GenericServiceUser genericServiceUser) {
         this.genericServiceAddress = genericServiceAddress;
         this.genericServiceUser = genericServiceUser;
-        this.postgresUserRepository = postgresUserRepository;
     }
 
     @PostMapping(path = "/batch-insert-simple", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -51,7 +48,7 @@ public class PostgreSQLController {
             @RequestParam("queryType") String queryType) throws IOException {
         DatabaseActionResponse response = genericServiceUser.saveAllComplex(file, DatabaseType.POSTGRESQL, batchSize);
 
-        CSVUtil.saveResultToCSV(
+        CSVUtil.saveInsertResultToCSV(
                 databaseType,
                 numberOfRecords,
                 batchSize,
@@ -64,5 +61,93 @@ public class PostgreSQLController {
         );
 
         return response;
+    }
+
+    @GetMapping(path = "/simple-count")
+    public DatabaseActionResponse getSimpleCount(
+            @RequestParam("numberOfRecords") String numberOfRecords,
+            @RequestParam("caching") String caching,
+            @RequestParam("indexing") String indexing) {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceAddress.getCount(DatabaseType.POSTGRESQL);
+
+        CSVUtil.saveReadResultsToCSV(
+              DatabaseType.POSTGRESQL.toString(),
+              numberOfRecords,
+              caching,
+              "COUNT",
+              "SIMPLE",
+                indexing,
+                databaseActionResponse.getTime(),
+                databaseActionResponse.getRamUsage(),
+                databaseActionResponse.getCpuUsage()
+        );
+
+        return databaseActionResponse;
+    }
+
+    @GetMapping(path = "/simple-aggregation")
+    public DatabaseActionResponse getSimpleAggregation(
+            @RequestParam("numberOfRecords") String numberOfRecords,
+            @RequestParam("caching") String caching,
+            @RequestParam("indexing") String indexing) {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceAddress.getAggregation(DatabaseType.POSTGRESQL);
+
+        CSVUtil.saveReadResultsToCSV(
+                DatabaseType.POSTGRESQL.toString(),
+                numberOfRecords,
+                caching,
+                "AGGREGATION",
+                "SIMPLE",
+                indexing,
+                databaseActionResponse.getTime(),
+                databaseActionResponse.getRamUsage(),
+                databaseActionResponse.getCpuUsage()
+        );
+
+        return databaseActionResponse;
+    }
+
+    @GetMapping(path = "/complex-count")
+    public DatabaseActionResponse getComplexCount(
+            @RequestParam("numberOfRecords") String numberOfRecords,
+            @RequestParam("caching") String caching,
+            @RequestParam("indexing") String indexing) {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceUser.getCount(DatabaseType.POSTGRESQL);
+
+        CSVUtil.saveReadResultsToCSV(
+                DatabaseType.POSTGRESQL.toString(),
+                numberOfRecords,
+                caching,
+                "COUNT",
+                "COMPLEX",
+                indexing,
+                databaseActionResponse.getTime(),
+                databaseActionResponse.getRamUsage(),
+                databaseActionResponse.getCpuUsage()
+        );
+
+        return databaseActionResponse;
+    }
+
+    @GetMapping(path = "/complex-aggregation")
+    public DatabaseActionResponse getComplexAggregation(
+            @RequestParam("numberOfRecords") String numberOfRecords,
+            @RequestParam("caching") String caching,
+            @RequestParam("indexing") String indexing) {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceUser.getAggregation(DatabaseType.POSTGRESQL);
+
+        CSVUtil.saveReadResultsToCSV(
+                DatabaseType.POSTGRESQL.toString(),
+                numberOfRecords,
+                caching,
+                "AGGREGATION",
+                "COMPLEX",
+                indexing,
+                databaseActionResponse.getTime(),
+                databaseActionResponse.getRamUsage(),
+                databaseActionResponse.getCpuUsage()
+        );
+
+        return databaseActionResponse;
     }
 }

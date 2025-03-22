@@ -66,6 +66,44 @@ public class GenericServiceUserImpl implements GenericServiceUser {
         return new DatabaseActionResponse(duration, maxCpuUsage.get(), maxRamUsage.get());
     }
 
+    @Override
+    public DatabaseActionResponse getCount(DatabaseType databaseType) {
+        long duration;
+
+        final long startTime = System.nanoTime();
+
+        final DatabaseActionResponse response = strategies.get(databaseType).getCount();
+
+        final long endTime = System.nanoTime();
+
+        duration = (endTime - startTime) / 1_000_000;
+
+        return new DatabaseActionResponse(
+                duration,
+                response.getCpuUsage(),
+                response.getRamUsage()
+        );
+    }
+
+    @Override
+    public DatabaseActionResponse getAggregation(DatabaseType databaseType) {
+        long duration;
+
+        final long startTime = System.nanoTime();
+
+        final DatabaseActionResponse response = strategies.get(databaseType).getAggregation();
+
+        final long endTime = System.nanoTime();
+
+        duration = (endTime - startTime) / 1_000_000;
+
+        return new DatabaseActionResponse(
+                duration,
+                response.getCpuUsage(),
+                response.getRamUsage()
+        );
+    }
+
     private Map<String, List<?>> convertToEntities(List<User> users, DatabaseType databaseType) {
         if (databaseType == DatabaseType.MONGODB) {
             List<Object> addresses = new ArrayList<>();

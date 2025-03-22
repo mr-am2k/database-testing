@@ -15,15 +15,24 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.format.DateTimeFormatter;
 
 public class CSVUtil {
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final String RESULTS_CSV_FILENAME = "insert.csv";
     private static final String RESOURCES_PATH = "src/main/resources/results";
     private static final String[] CSV_HEADERS = {
             "databaseType", "numberOfRecords", "batchSize", "caching",
             "numberOfThreads", "queryType", "executionTime", "ramUsage", "cpuUsage"
+    };
+
+    private static final String READ_RESULTS_CSV_FILENAME = "read.csv";
+    private static final String[] READ_CSV_HEADERS = {
+            "databaseType", "numberOfRecords", "caching", "queryVersion",
+            "queryType", "indexing", "executionTime", "ramUsage", "cpuUsage"
     };
 
     public static <T> List<List<T>> parseCSV(MultipartFile file, Class<T> clazz, int batchSize) {
@@ -71,7 +80,7 @@ public class CSVUtil {
     }
 
     private static Object parseValue(String value, Class<?> fieldType) {
-        if (value == null) {
+        if (value == null || value.isBlank()) {
             return null;
         }
         if (fieldType == String.class) {
@@ -82,6 +91,8 @@ public class CSVUtil {
             return Double.parseDouble(value);
         } else if (fieldType == boolean.class || fieldType == Boolean.class) {
             return Boolean.parseBoolean(value);
+        } else if (fieldType == LocalDate.class) {  // ✅ Handle LocalDate
+            return LocalDate.parse(value, DATE_FORMATTER);
         }
         return null;
     }
@@ -99,7 +110,7 @@ public class CSVUtil {
      * @param ramUsage Peak RAM usage
      * @param cpuUsage Peak CPU usage
      */
-    public static void saveResultToCSV(
+    public static void saveInsertResultToCSV(
             String databaseType,
             int numberOfRecords,
             int batchSize,
@@ -150,6 +161,60 @@ public class CSVUtil {
             System.out.println("Results successfully saved to " + csvFilePath.toAbsolutePath());
         } catch (Exception e) {
             throw new RuntimeException("Failed to save results to CSV: " + e.getMessage(), e);
+        }
+    }
+
+    public static void saveReadResultsToCSV(
+            String databaseType,
+            String numberOfRecords,
+            String caching,
+            String queryVersion,
+            String queryType,
+            String indexing,
+            long executionTime,
+            String ramUsage,
+            String cpuUsage) {
+
+        try {
+            Path resourcesDir = Paths.get(RESOURCES_PATH);
+            if (!Files.exists(resourcesDir)) {
+                Files.createDirectories(resourcesDir);
+            }
+
+            Path csvFilePath = resourcesDir.resolve(READ_RESULTS_CSV_FILENAME);
+            boolean fileExists = Files.exists(csvFilePath);
+
+            Path tempFile = Files.createTempFile("temp-", "-read-results.csv");
+
+            if (fileExists) {
+                Files.copy(csvFilePath, tempFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            try (CSVWriter writer = new CSVWriter(new FileWriter(tempFile.toFile(), fileExists))) {
+                if (!fileExists || Files.size(csvFilePath) == 0) {
+                    writer.writeNext(READ_CSV_HEADERS);
+                }
+
+                String[] dataRow = {
+                        databaseType,
+                        String.valueOf(numberOfRecords),
+                        caching,
+                        queryVersion,
+                        queryType,
+                        indexing,
+                        String.valueOf(executionTime),
+                        ramUsage,
+                        cpuUsage
+                };
+
+                writer.writeNext(dataRow);
+            }
+
+            Files.move(tempFile, csvFilePath, StandardCopyOption.REPLACE_EXISTING);
+
+            System.out.println("Read results successfully saved to " + csvFilePath.toAbsolutePath());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to save read results to CSV: " + e.getMessage(), e);
         }
     }
 

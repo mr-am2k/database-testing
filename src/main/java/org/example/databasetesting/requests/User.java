@@ -1,6 +1,5 @@
 package org.example.databasetesting.requests;
 
-import org.bson.types.ObjectId;
 import org.example.databasetesting.entities.mongodb.AddressDocument;
 import org.example.databasetesting.entities.mongodb.CreditCardDocument;
 import org.example.databasetesting.entities.mongodb.UserDocument;
@@ -9,7 +8,6 @@ import org.example.databasetesting.entities.postgresql.*;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 
 public class User {
@@ -127,7 +125,7 @@ public class User {
         return expirationDate;
     }
 
-    public void setExpirationLocalDate(LocalDate expirationDate) {
+    public void setExpirationDate(LocalDate expirationDate) {
         this.expirationDate = expirationDate;
     }
 

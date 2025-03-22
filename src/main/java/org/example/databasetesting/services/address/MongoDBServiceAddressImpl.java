@@ -3,6 +3,7 @@ package org.example.databasetesting.services.address;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.example.databasetesting.entities.mongodb.AddressDocument;
 import org.example.databasetesting.repositories.mongodb.MongoAddressRepository;
+import org.example.databasetesting.response.CountryCountProjection;
 import org.example.databasetesting.response.DatabaseActionResponse;
 import org.example.databasetesting.services.ActionsService;
 import org.springframework.stereotype.Service;
@@ -60,6 +61,46 @@ public class MongoDBServiceAddressImpl implements ActionsService<AddressDocument
 
         meterRegistry.gauge("mongodb.address.avgCpuUsage", avgCpu);
         meterRegistry.gauge("mongodb.address.avgMemoryUsage", avgMemory);
+
+        return new DatabaseActionResponse(0,
+                String.format("%.2f%%", avgCpu / 100),
+                String.format("%.2fMB", avgMemory / 1_048_576));
+    }
+
+    @Override
+    public DatabaseActionResponse getCount() {
+        cpuMeasurements.get().clear();
+        memoryMeasurements.get().clear();
+
+        recordMetrics();
+        long result = this.mongoAddressRepository.countByCountry("Bosnia and Herzegovina");
+        recordMetrics();
+
+        double avgCpu = calculateAverage(cpuMeasurements.get());
+        double avgMemory = calculateAverage(memoryMeasurements.get());
+
+        meterRegistry.gauge("postgres.address.avgCpuUsage", avgCpu);
+        meterRegistry.gauge("postgres.address.avgMemoryUsage", avgMemory);
+
+        return new DatabaseActionResponse(0,
+                String.format("%.2f%%", avgCpu / 100),
+                String.format("%.2fMB", avgMemory / 1_048_576));
+    }
+
+    @Override
+    public DatabaseActionResponse getAggregation() {
+        cpuMeasurements.get().clear();
+        memoryMeasurements.get().clear();
+
+        recordMetrics();
+        List<CountryCountProjection> result = this.mongoAddressRepository.findTopCountriesByRecordCount("new");
+        recordMetrics();
+
+        double avgCpu = calculateAverage(cpuMeasurements.get());
+        double avgMemory = calculateAverage(memoryMeasurements.get());
+
+        meterRegistry.gauge("postgres.address.avgCpuUsage", avgCpu);
+        meterRegistry.gauge("postgres.address.avgMemoryUsage", avgMemory);
 
         return new DatabaseActionResponse(0,
                 String.format("%.2f%%", avgCpu / 100),
