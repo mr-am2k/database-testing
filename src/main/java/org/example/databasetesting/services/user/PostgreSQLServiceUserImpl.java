@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.lang.management.ManagementFactory;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
@@ -52,16 +51,13 @@ public class PostgreSQLServiceUserImpl implements ActionServiceComplex<UserEntit
 
     @Override
     @Transactional
-    public DatabaseActionResponse saveAll(Map<String, List<?>> entities) {
+    public DatabaseActionResponse saveAll(List<?> entities) {
         cpuMeasurements.get().clear();
         memoryMeasurements.get().clear();
 
         recordMetrics();
-
-        List<UserEntity> users = (List<UserEntity>) entities.get("users");
+        List<UserEntity> users = (List<UserEntity>) entities;
         postgresUserRepository.saveAll(users);
-
-        recordMetrics();
 
         double avgCpu = calculateAverage(cpuMeasurements.get());
         double avgMemory = calculateAverage(memoryMeasurements.get());

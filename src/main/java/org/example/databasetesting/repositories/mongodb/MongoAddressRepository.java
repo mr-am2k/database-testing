@@ -1,7 +1,7 @@
 package org.example.databasetesting.repositories.mongodb;
 
 import org.example.databasetesting.entities.mongodb.AddressDocument;
-import org.example.databasetesting.response.CountryCountProjection;
+import org.example.databasetesting.response.CountryCountProjectionMongo;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
@@ -17,5 +17,5 @@ public interface MongoAddressRepository extends MongoRepository<AddressDocument,
             "{ $sort: { count: -1 } }",
             "{ $limit: 100 }"
     })
-    List<CountryCountProjection> findTopCountriesByRecordCount(String cityKeyword);
+    List<CountryCountProjectionMongo> findTopCountriesByRecordCount(String cityKeyword);
 }

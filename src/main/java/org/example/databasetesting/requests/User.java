@@ -6,9 +6,6 @@ import org.example.databasetesting.entities.mongodb.UserDocument;
 import org.example.databasetesting.entities.postgresql.*;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
-
 
 public class User {
     private String firstName;
@@ -155,37 +152,24 @@ public class User {
         return userEntity;
     }
 
-    public Map<String, Object> toMongoDocument() {
-        AddressDocument addressDocument = new AddressDocument();
+    public UserDocument toMongoDocument() {
+        AddressDocument addressDocument = new AddressDocument(address, city, country, zipCode);
+
         CreditCardDocument creditCardDocument = new CreditCardDocument();
+        creditCardDocument.setCardNumber(cardNumber);
+        creditCardDocument.setCvv(cvv);
+        creditCardDocument.setExpirationDate(expirationDate);
+        creditCardDocument.setName(nameOnTheCard);
+
         UserDocument userDocument = new UserDocument();
+        userDocument.setFirstName(firstName);
+        userDocument.setLastName(lastName);
+        userDocument.setEmail(email);
+        userDocument.setPassword(password);
+        userDocument.setStatus(userStatus);
+        userDocument.setAddress(addressDocument);
+        userDocument.setCreditCard(creditCardDocument);
 
-        //addressDocument.setId(new ObjectId());
-        addressDocument.setAddress(this.address);
-        addressDocument.setCity(this.city);
-        addressDocument.setCountry(this.country);
-        addressDocument.setZipCode(this.zipCode);
-
-        //creditCardDocument.setId(new ObjectId());
-        creditCardDocument.setCardNumber(this.cardNumber);
-        creditCardDocument.setCvv(this.cvv);
-        creditCardDocument.setExpirationDate(this.expirationDate);
-        creditCardDocument.setName(this.nameOnTheCard);
-
-        //userDocument.setId(UUID.randomUUID());
-        userDocument.setFirstName(this.firstName);
-        userDocument.setLastName(this.lastName);
-        userDocument.setEmail(this.email);
-        userDocument.setPassword(this.password);
-        userDocument.setStatus(this.userStatus);
-        userDocument.setAddressDocument(addressDocument);
-        userDocument.setCreditCardDocument(creditCardDocument);
-
-        Map<String, Object> map = new HashMap<>();
-        map.put("address", addressDocument);
-        map.put("creditCard", creditCardDocument);
-        map.put("user", userDocument);
-
-        return map;
+        return userDocument;
     }
 }

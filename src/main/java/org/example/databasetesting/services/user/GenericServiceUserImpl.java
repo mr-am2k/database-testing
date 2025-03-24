@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class GenericServiceUserImpl implements GenericServiceUser {
-    public static final int PROCESSING_THREADS = 4;
+    public static final int PROCESSING_THREADS = 15;
     private final EnumMap<DatabaseType, ActionServiceComplex> strategies = new EnumMap<>(DatabaseType.class);
 
     public GenericServiceUserImpl(
@@ -42,7 +42,7 @@ public class GenericServiceUserImpl implements GenericServiceUser {
 
             for (List<User> batch : batches) {
                 CompletableFuture<DatabaseActionResponse> batchFuture = CompletableFuture.supplyAsync(() -> {
-                    Map<String, List<?>> entities = convertToEntities(batch, databaseType);
+                    List<?> entities = convertToEntities(batch, databaseType);
                     return strategies.get(databaseType).saveAll(entities);
                 }, executorService).whenComplete((response, ex) -> {
                     if (response != null) {
@@ -104,29 +104,31 @@ public class GenericServiceUserImpl implements GenericServiceUser {
         );
     }
 
-    private Map<String, List<?>> convertToEntities(List<User> users, DatabaseType databaseType) {
+    private List<?> convertToEntities(List<User> users, DatabaseType databaseType) {
         if (databaseType == DatabaseType.MONGODB) {
-            List<Object> addresses = new ArrayList<>();
-            List<Object> creditCards = new ArrayList<>();
-            List<Object> usersList = new ArrayList<>();
-
-            users.forEach(user -> {
-                Map<String, Object> mongoDocument = user.toMongoDocument();
-                addresses.add(mongoDocument.get("address"));
-                creditCards.add(mongoDocument.get("creditCard"));
-                usersList.add(mongoDocument.get("user"));
-            });
-
-            Map<String, List<?>> resultMap = new HashMap<>();
-            resultMap.put("address", addresses);
-            resultMap.put("creditCard", creditCards);
-            resultMap.put("user", usersList);
-
-            return resultMap;
+            return users.stream().map(User::toMongoDocument).toList();
+            //            List<Object> addresses = new ArrayList<>();
+//            List<Object> creditCards = new ArrayList<>();
+//            List<Object> usersList = new ArrayList<>();
+//
+//            users.forEach(user -> {
+//                Map<String, Object> mongoDocument = user.toMongoDocument();
+//                addresses.add(mongoDocument.get("address"));
+//                creditCards.add(mongoDocument.get("creditCard"));
+//                usersList.add(mongoDocument.get("user"));
+//            });
+//
+//            Map<String, List<?>> resultMap = new HashMap<>();
+//            resultMap.put("address", addresses);
+//            resultMap.put("creditCard", creditCards);
+//            resultMap.put("user", usersList);
+//
+//            return resultMap;
         } else if (databaseType == DatabaseType.POSTGRESQL) {
-            return Map.of("users", users.stream().map(User::toPostgresEntity).toList());
+            return users.stream().map(User::toPostgresEntity).toList();
+            //return Map.of("users", users.stream().map(User::toPostgresEntity).toList());
         }
-        return Collections.emptyMap();
+        return Collections.emptyList();
     }
 
     private void updateMaxMetrics(DatabaseActionResponse batchResponse,

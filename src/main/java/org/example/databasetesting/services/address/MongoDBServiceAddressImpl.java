@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import org.example.databasetesting.entities.mongodb.AddressDocument;
 import org.example.databasetesting.repositories.mongodb.MongoAddressRepository;
 import org.example.databasetesting.response.CountryCountProjection;
+import org.example.databasetesting.response.CountryCountProjectionMongo;
 import org.example.databasetesting.response.DatabaseActionResponse;
 import org.example.databasetesting.services.ActionsService;
 import org.springframework.stereotype.Service;
@@ -93,7 +94,7 @@ public class MongoDBServiceAddressImpl implements ActionsService<AddressDocument
         memoryMeasurements.get().clear();
 
         recordMetrics();
-        List<CountryCountProjection> result = this.mongoAddressRepository.findTopCountriesByRecordCount("new");
+        List<CountryCountProjectionMongo> result = this.mongoAddressRepository.findTopCountriesByRecordCount("new");
         recordMetrics();
 
         double avgCpu = calculateAverage(cpuMeasurements.get());

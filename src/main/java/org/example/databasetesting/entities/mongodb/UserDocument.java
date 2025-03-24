@@ -1,8 +1,7 @@
 package org.example.databasetesting.entities.mongodb;
 
-import jakarta.persistence.Id;
 import org.bson.types.ObjectId;
-import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "users")
@@ -14,10 +13,9 @@ public class UserDocument {
     private String email;
     private String password;
     private String status;
-    @DBRef
-    private AddressDocument addressDocument;
-    @DBRef
-    private CreditCardDocument creditCardDocument;
+
+    private AddressDocument address;
+    private CreditCardDocument creditCard;
 
     public UserDocument() {
     }
@@ -70,19 +68,19 @@ public class UserDocument {
         this.status = status;
     }
 
-    public AddressDocument getAddressDocument() {
-        return addressDocument;
+    public AddressDocument getAddress() {
+        return address;
     }
 
-    public void setAddressDocument(AddressDocument addressDocument) {
-        this.addressDocument = addressDocument;
+    public void setAddress(AddressDocument address) {
+        this.address = address;
     }
 
-    public CreditCardDocument getCreditCardDocument() {
-        return creditCardDocument;
+    public CreditCardDocument getCreditCard() {
+        return creditCard;
     }
 
-    public void setCreditCardDocument(CreditCardDocument creditCardDocument) {
-        this.creditCardDocument = creditCardDocument;
+    public void setCreditCard(CreditCardDocument creditCard) {
+        this.creditCard = creditCard;
     }
 }
