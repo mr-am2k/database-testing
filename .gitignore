@@ -34,4 +34,7 @@ build/
 
 application.yml
 
-/src/main/resources
+/src/main/resources/address
+/src/main/resources/user
+
+users_5m
