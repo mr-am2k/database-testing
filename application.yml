@@ -1,0 +1,52 @@
+server:
+  port: 8080
+
+spring:
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  connection-timeout: 7200000
+  application:
+    name: database-testing
+  datasource:
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 30000
+      max-lifetime: 1800000
+    url: jdbc:postgresql://localhost:5432/database-testing
+    username: am2k
+    password: password
+    driver-class-name: org.postgresql.Driver
+  servlet:
+    multipart:
+      max-file-size: 4096MB
+      max-request-size: 4096MB
+  jpa:
+    properties:
+      hibernate:
+        c3p0:
+          min_size: 5
+          max_size: 20
+          timeout: 300
+          idle_test_period: 3000
+          max_statements: 50
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        hibernate.cache.use_second_level_cache: true
+        hibernate.cache.use_query_cache: true
+    hibernate:
+      ddl-auto: update
+      jdbc:
+        batch_versioned_data: true
+    show-sql: true
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/database-testing
+      database: database-testing
+
+#logging:
+#  level:
+#    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
+#    org.mongodb.driver: DEBUG
