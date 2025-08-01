@@ -104,6 +104,25 @@ public class GenericServiceUserImpl implements GenericServiceUser {
         );
     }
 
+    @Override
+    public DatabaseActionResponse complexUpdate(DatabaseType databaseType) {
+        long duration;
+
+        final long startTime = System.nanoTime();
+
+        final DatabaseActionResponse response = strategies.get(databaseType).complexUpdate();
+
+        final long endTime = System.nanoTime();
+
+        duration = (endTime - startTime) / 1_000_000;
+
+        return new DatabaseActionResponse(
+                duration,
+                response.getCpuUsage(),
+                response.getRamUsage()
+        );
+    }
+
     private List<?> convertToEntities(List<User> users, DatabaseType databaseType) {
         if (databaseType == DatabaseType.MONGODB) {
             return users.stream().map(User::toMongoDocument).toList();

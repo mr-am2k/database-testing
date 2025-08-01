@@ -1,9 +1,11 @@
 package org.example.databasetesting.repositories.postgresql;
 
+import jakarta.transaction.Transactional;
 import org.example.databasetesting.entities.postgresql.AddressEntity;
 import org.example.databasetesting.response.CountryCountProjection;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -19,4 +21,9 @@ public interface PostgresAddressRepository extends JpaRepository<AddressEntity, 
             "GROUP BY a.country " +
             "ORDER BY COUNT(a) DESC")
     List<CountryCountProjection> findTopCountriesByRecordCount(@Param("cityKeyword") String cityKeyword, Pageable pageable);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE AddressEntity a SET a.city = :newCity WHERE a.city = :oldCity")
+    int updateCityByCity(String oldCity, String newCity);
 }

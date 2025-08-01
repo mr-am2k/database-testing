@@ -114,6 +114,25 @@ public class GenericServiceAddressImpl implements GenericServiceAddress {
         );
     }
 
+    @Override
+    public DatabaseActionResponse simpleUpdate(DatabaseType databaseType) {
+        long duration;
+
+        final long startTime = System.nanoTime();
+
+        final DatabaseActionResponse response = strategies.get(databaseType).simpleUpdate();
+
+        final long endTime = System.nanoTime();
+
+        duration = (endTime - startTime) / 1_000_000;
+
+        return new DatabaseActionResponse(
+                duration,
+                response.getCpuUsage(),
+                response.getRamUsage()
+        );
+    }
+
     private void updateMaxMetrics(DatabaseActionResponse batchResponse,
                                   AtomicReference<String> maxCpuUsage,
                                   AtomicReference<String> maxRamUsage) {

@@ -10,4 +10,6 @@ public interface GenericServiceAddress {
     DatabaseActionResponse getCount(DatabaseType databaseType);
 
     DatabaseActionResponse getAggregation(DatabaseType databaseType);
+
+    DatabaseActionResponse simpleUpdate(DatabaseType databaseType);
 }

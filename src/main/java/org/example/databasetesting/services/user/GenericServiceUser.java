@@ -10,4 +10,6 @@ public interface GenericServiceUser {
     DatabaseActionResponse getCount(DatabaseType databaseType);
 
     DatabaseActionResponse getAggregation(DatabaseType databaseType);
+
+    DatabaseActionResponse complexUpdate(DatabaseType databaseType);
 }

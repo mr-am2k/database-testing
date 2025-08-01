@@ -10,4 +10,6 @@ public interface ActionServiceComplex<T> {
     DatabaseActionResponse getCount();
 
     DatabaseActionResponse getAggregation();
+
+    DatabaseActionResponse complexUpdate();
 }

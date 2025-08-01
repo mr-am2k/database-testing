@@ -10,4 +10,6 @@ public interface ActionsService<T> {
     DatabaseActionResponse getCount();
 
     DatabaseActionResponse getAggregation();
+
+    DatabaseActionResponse simpleUpdate();
 }

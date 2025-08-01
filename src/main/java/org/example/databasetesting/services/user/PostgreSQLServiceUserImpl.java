@@ -109,4 +109,24 @@ public class PostgreSQLServiceUserImpl implements ActionServiceComplex<UserEntit
                 String.format("%.2f%%", avgCpu / 100),
                 String.format("%.2fMB", avgMemory / 1_048_576));
     }
+
+    @Override
+    public DatabaseActionResponse complexUpdate() {
+        cpuMeasurements.get().clear();
+        memoryMeasurements.get().clear();
+
+        recordMetrics();
+        int result = postgresUserRepository.updateUserStatusByCityAndCVV("Zavidovici", "ACTIVE", "Muamer", "DEACTIVATED");
+        recordMetrics();
+
+        double avgCpu = calculateAverage(cpuMeasurements.get());
+        double avgMemory = calculateAverage(memoryMeasurements.get());
+
+        meterRegistry.gauge("postgres.operation.avgCpuUsage", avgCpu);
+        meterRegistry.gauge("postgres.operation.avgMemoryUsage", avgMemory);
+
+        return new DatabaseActionResponse(0,
+                String.format("%.2f%%", avgCpu / 100),
+                String.format("%.2fMB", avgMemory / 1_048_576));
+    }
 }

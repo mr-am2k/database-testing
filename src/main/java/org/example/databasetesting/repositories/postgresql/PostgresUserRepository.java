@@ -1,9 +1,11 @@
 package org.example.databasetesting.repositories.postgresql;
 
+import jakarta.transaction.Transactional;
 import org.example.databasetesting.entities.postgresql.UserEntity;
 import org.example.databasetesting.response.CityUserCountProjection;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -27,4 +29,26 @@ public interface PostgresUserRepository extends JpaRepository<UserEntity, UUID> 
             @Param("expirationDate") LocalDate expirationDate,
             @Param("cityKeyword") String cityKeyword,
             Pageable pageable);
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+    UPDATE users u
+    SET status = :newStatus
+    WHERE u.status = :oldStatus
+      AND EXISTS (
+          SELECT 1 FROM addresses a
+          WHERE a.id = u.address_id AND a.city = :city
+      )
+      AND EXISTS (
+          SELECT 1 FROM credit_cards c
+          WHERE c.id = u.credit_card_id AND c.name = :name
+      )
+    """, nativeQuery = true)
+    int updateUserStatusByCityAndCVV(
+            String city,
+            String oldStatus,
+            String name,
+            String newStatus
+    );
 }

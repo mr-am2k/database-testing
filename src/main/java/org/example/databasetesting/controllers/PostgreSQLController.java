@@ -150,4 +150,42 @@ public class PostgreSQLController {
 
         return databaseActionResponse;
     }
+
+    @PutMapping(path = "/simple-update")
+    public DatabaseActionResponse simpleUpdate(
+            @RequestParam("numberOfRecords") String numberOfRecords,
+            @RequestParam("caching") String caching) {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceAddress.simpleUpdate(DatabaseType.POSTGRESQL);
+
+        CSVUtil.saveUpdateResultsToCSV(
+                DatabaseType.POSTGRESQL.toString(),
+                numberOfRecords,
+                caching,
+                "SIMPLE",
+                databaseActionResponse.getTime(),
+                databaseActionResponse.getRamUsage(),
+                databaseActionResponse.getCpuUsage()
+        );
+
+        return databaseActionResponse;
+    }
+
+    @PutMapping(path = "/complex-update")
+    public DatabaseActionResponse complexUpdate(
+            @RequestParam("numberOfRecords") String numberOfRecords,
+            @RequestParam("caching") String caching) {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceUser.complexUpdate(DatabaseType.POSTGRESQL);
+
+        CSVUtil.saveUpdateResultsToCSV(
+                DatabaseType.POSTGRESQL.toString(),
+                numberOfRecords,
+                caching,
+                "COMPLEX",
+                databaseActionResponse.getTime(),
+                databaseActionResponse.getRamUsage(),
+                databaseActionResponse.getCpuUsage()
+        );
+
+        return databaseActionResponse;
+    }
 }

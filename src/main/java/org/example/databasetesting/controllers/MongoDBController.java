@@ -162,4 +162,44 @@ public class MongoDBController {
 
         return databaseActionResponse;
     }
+
+    @PutMapping(path = "/simple-update")
+    public DatabaseActionResponse simpleUpdate(
+            @RequestParam("databaseType") String databaseType,
+            @RequestParam("numberOfRecords") String numberOfRecords,
+            @RequestParam("caching") String caching) {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceAddress.simpleUpdate(DatabaseType.MONGODB);
+
+        CSVUtil.saveUpdateResultsToCSV(
+                databaseType,
+                numberOfRecords,
+                caching,
+                "SIMPLE",
+                databaseActionResponse.getTime(),
+                databaseActionResponse.getRamUsage(),
+                databaseActionResponse.getCpuUsage()
+        );
+
+        return databaseActionResponse;
+    }
+
+    @PutMapping(path = "/complex-update")
+    public DatabaseActionResponse complexUpdate(
+            @RequestParam("databaseType") String databaseType,
+            @RequestParam("numberOfRecords") String numberOfRecords,
+            @RequestParam("caching") String caching) {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceUser.complexUpdate(DatabaseType.MONGODB);
+
+        CSVUtil.saveUpdateResultsToCSV(
+                databaseType,
+                numberOfRecords,
+                caching,
+                "COMPLEX",
+                databaseActionResponse.getTime(),
+                databaseActionResponse.getRamUsage(),
+                databaseActionResponse.getCpuUsage()
+        );
+
+        return databaseActionResponse;
+    }
 }
