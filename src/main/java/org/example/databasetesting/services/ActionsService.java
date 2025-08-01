@@ -12,4 +12,6 @@ public interface ActionsService<T> {
     DatabaseActionResponse getAggregation();
 
     DatabaseActionResponse simpleUpdate();
+
+    DatabaseActionResponse simpleDelete();
 }

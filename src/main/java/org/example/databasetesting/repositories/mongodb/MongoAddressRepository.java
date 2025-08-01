@@ -1,5 +1,6 @@
 package org.example.databasetesting.repositories.mongodb;
 
+import jakarta.transaction.Transactional;
 import org.example.databasetesting.entities.mongodb.AddressDocument;
 import org.example.databasetesting.response.CountryCountProjectionMongo;
 import org.springframework.data.mongodb.repository.Aggregation;
@@ -18,4 +19,7 @@ public interface MongoAddressRepository extends MongoRepository<AddressDocument,
             "{ $limit: 100 }"
     })
     List<CountryCountProjectionMongo> findTopCountriesByRecordCount(String cityKeyword);
+
+    @Transactional
+    long deleteByCity(String city);
 }

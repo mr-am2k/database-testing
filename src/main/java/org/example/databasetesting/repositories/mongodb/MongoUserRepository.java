@@ -22,4 +22,8 @@ public interface MongoUserRepository extends MongoRepository<UserDocument, UUID>
             "{ $limit: 100 }"
     })
     List<CityUserCountProjectionMongo> countUsersByCity(String status, LocalDate expirationDate, String cityKeyword);
+
+    long deleteByStatusAndAddress_CityAndCreditCard_Name(
+            String status, String city, String cardName
+    );
 }

@@ -12,4 +12,6 @@ public interface GenericServiceUser {
     DatabaseActionResponse getAggregation(DatabaseType databaseType);
 
     DatabaseActionResponse complexUpdate(DatabaseType databaseType);
+
+    DatabaseActionResponse complexDelete(DatabaseType databaseType);
 }

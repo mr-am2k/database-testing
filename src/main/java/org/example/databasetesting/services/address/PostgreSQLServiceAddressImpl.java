@@ -130,4 +130,24 @@ public class PostgreSQLServiceAddressImpl implements ActionsService<AddressEntit
                 String.format("%.2f%%", avgCpu / 100),
                 String.format("%.2fMB", avgMemory / 1_048_576));
     }
+
+    @Override
+    public DatabaseActionResponse simpleDelete() {
+        cpuMeasurements.get().clear();
+        memoryMeasurements.get().clear();
+
+        recordMetrics();
+        final int result = this.postgresAddressRepository.deleteByCity("Sarajevo");
+        recordMetrics();
+
+        double avgCpu = calculateAverage(cpuMeasurements.get());
+        double avgMemory = calculateAverage(memoryMeasurements.get());
+
+        meterRegistry.gauge("postgres.address.avgCpuUsage", avgCpu);
+        meterRegistry.gauge("postgres.address.avgMemoryUsage", avgMemory);
+
+        return new DatabaseActionResponse(0,
+                String.format("%.2f%%", avgCpu / 100),
+                String.format("%.2fMB", avgMemory / 1_048_576));
+    }
 }

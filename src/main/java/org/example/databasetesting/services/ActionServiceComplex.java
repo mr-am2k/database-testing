@@ -12,4 +12,6 @@ public interface ActionServiceComplex<T> {
     DatabaseActionResponse getAggregation();
 
     DatabaseActionResponse complexUpdate();
+
+    DatabaseActionResponse complexDelete();
 }

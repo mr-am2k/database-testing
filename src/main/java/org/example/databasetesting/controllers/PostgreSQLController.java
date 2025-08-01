@@ -188,4 +188,42 @@ public class PostgreSQLController {
 
         return databaseActionResponse;
     }
+
+    @DeleteMapping(path = "/simple-delete")
+    public DatabaseActionResponse simpleDelete(
+            @RequestParam("numberOfRecords") String numberOfRecords,
+            @RequestParam("caching") String caching) {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceAddress.simpleDelete(DatabaseType.POSTGRESQL);
+
+        CSVUtil.saveUpdateResultsToCSV(
+                DatabaseType.POSTGRESQL.toString(),
+                numberOfRecords,
+                caching,
+                "SIMPLE",
+                databaseActionResponse.getTime(),
+                databaseActionResponse.getRamUsage(),
+                databaseActionResponse.getCpuUsage()
+        );
+
+        return databaseActionResponse;
+    }
+
+    @DeleteMapping(path = "/complex-delete")
+    public DatabaseActionResponse complexDelete(
+            @RequestParam("numberOfRecords") String numberOfRecords,
+            @RequestParam("caching") String caching) {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceUser.complexDelete(DatabaseType.POSTGRESQL);
+
+        CSVUtil.saveUpdateResultsToCSV(
+                DatabaseType.POSTGRESQL.toString(),
+                numberOfRecords,
+                caching,
+                "COMPLEX",
+                databaseActionResponse.getTime(),
+                databaseActionResponse.getRamUsage(),
+                databaseActionResponse.getCpuUsage()
+        );
+
+        return databaseActionResponse;
+    }
 }

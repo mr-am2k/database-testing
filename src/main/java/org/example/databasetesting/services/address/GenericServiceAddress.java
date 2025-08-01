@@ -12,4 +12,6 @@ public interface GenericServiceAddress {
     DatabaseActionResponse getAggregation(DatabaseType databaseType);
 
     DatabaseActionResponse simpleUpdate(DatabaseType databaseType);
+
+    DatabaseActionResponse simpleDelete(DatabaseType databaseType);
 }

@@ -202,4 +202,44 @@ public class MongoDBController {
 
         return databaseActionResponse;
     }
+
+    @DeleteMapping(path = "/simple-delete")
+    public DatabaseActionResponse simpleDelete(
+            @RequestParam("databaseType") String databaseType,
+            @RequestParam("numberOfRecords") String numberOfRecords,
+            @RequestParam("caching") String caching) {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceAddress.simpleDelete(DatabaseType.MONGODB);
+
+        CSVUtil.saveDeleteResultsToCSV(
+                databaseType,
+                numberOfRecords,
+                caching,
+                "SIMPLE",
+                databaseActionResponse.getTime(),
+                databaseActionResponse.getRamUsage(),
+                databaseActionResponse.getCpuUsage()
+        );
+
+        return databaseActionResponse;
+    }
+
+    @DeleteMapping(path = "/complex-delete")
+    public DatabaseActionResponse complexDelete(
+            @RequestParam("databaseType") String databaseType,
+            @RequestParam("numberOfRecords") String numberOfRecords,
+            @RequestParam("caching") String caching) {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceUser.complexDelete(DatabaseType.MONGODB);
+
+        CSVUtil.saveDeleteResultsToCSV(
+                databaseType,
+                numberOfRecords,
+                caching,
+                "COMPLEX",
+                databaseActionResponse.getTime(),
+                databaseActionResponse.getRamUsage(),
+                databaseActionResponse.getCpuUsage()
+        );
+
+        return databaseActionResponse;
+    }
 }

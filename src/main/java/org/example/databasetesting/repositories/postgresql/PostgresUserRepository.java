@@ -51,4 +51,14 @@ public interface PostgresUserRepository extends JpaRepository<UserEntity, UUID> 
             String name,
             String newStatus
     );
+
+    @Modifying
+    @Transactional
+    @Query("""
+        DELETE FROM UserEntity u
+        WHERE u.status = :status
+          AND u.address.city = :city
+          AND u.creditCard.name = :cardName
+    """)
+    int deleteUsersByStatusAndCityAndCardName(String status, String city, String cardName);
 }

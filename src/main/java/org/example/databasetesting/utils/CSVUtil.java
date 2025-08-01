@@ -41,6 +41,12 @@ public class CSVUtil {
             "queryType", "executionTime", "ramUsage", "cpuUsage"
     };
 
+    private static final String DELETE_RESULTS_CSV_FILENAME = "update.csv";
+    private static final String[] DELETE_CSV_HEADERS = {
+            "databaseType", "numberOfRecords", "caching",
+            "queryType", "executionTime", "ramUsage", "cpuUsage"
+    };
+
     public static <T> List<List<T>> parseCSV(MultipartFile file, Class<T> clazz, int batchSize) {
         List<List<T>> batches = new ArrayList<>();
 
@@ -316,4 +322,54 @@ public class CSVUtil {
         }
     }
 
+
+    public static void saveDeleteResultsToCSV(
+            String databaseType,
+            String numberOfRecords,
+            String caching,
+            String queryType,
+            long executionTime,
+            String ramUsage,
+            String cpuUsage) {
+
+        try {
+            Path resourcesDir = Paths.get(RESOURCES_PATH);
+            if (!Files.exists(resourcesDir)) {
+                Files.createDirectories(resourcesDir);
+            }
+
+            Path csvFilePath = resourcesDir.resolve(DELETE_RESULTS_CSV_FILENAME);
+            boolean fileExists = Files.exists(csvFilePath);
+
+            Path tempFile = Files.createTempFile("temp-", "-delete-results.csv");
+
+            if (fileExists) {
+                Files.copy(csvFilePath, tempFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            try (CSVWriter writer = new CSVWriter(new FileWriter(tempFile.toFile(), fileExists))) {
+                if (!fileExists || Files.size(csvFilePath) == 0) {
+                    writer.writeNext(DELETE_CSV_HEADERS);
+                }
+
+                String[] dataRow = {
+                        databaseType,
+                        numberOfRecords,
+                        caching,
+                        queryType,
+                        String.valueOf(executionTime),
+                        ramUsage,
+                        cpuUsage
+                };
+
+                writer.writeNext(dataRow);
+            }
+
+            Files.move(tempFile, csvFilePath, StandardCopyOption.REPLACE_EXISTING);
+
+            System.out.println("Update results successfully saved to " + csvFilePath.toAbsolutePath());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to save update results to CSV: " + e.getMessage(), e);
+        }
+    }
 }

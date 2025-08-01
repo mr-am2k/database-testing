@@ -26,4 +26,7 @@ public interface PostgresAddressRepository extends JpaRepository<AddressEntity, 
     @Transactional
     @Query("UPDATE AddressEntity a SET a.city = :newCity WHERE a.city = :oldCity")
     int updateCityByCity(String oldCity, String newCity);
+
+    @Transactional
+    int deleteByCity(String city);
 }
