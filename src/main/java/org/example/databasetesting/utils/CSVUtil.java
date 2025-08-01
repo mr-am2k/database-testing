@@ -41,7 +41,7 @@ public class CSVUtil {
             "queryType", "executionTime", "ramUsage", "cpuUsage"
     };
 
-    private static final String DELETE_RESULTS_CSV_FILENAME = "update.csv";
+    private static final String DELETE_RESULTS_CSV_FILENAME = "delete.csv";
     private static final String[] DELETE_CSV_HEADERS = {
             "databaseType", "numberOfRecords", "caching",
             "queryType", "executionTime", "ramUsage", "cpuUsage"
