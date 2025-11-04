@@ -190,14 +190,14 @@ sh.addShard("shard3rs/shard3:27017")
 
 4.
 # Enable sharding for your database
-use database-testing-sharding
-sh.enableSharding("database-testing-sharding")
+use database-testing
+sh.enableSharding("database-testing")
 
 # Create a sharding key index on your collection
-db.address.createIndex({ "city": "hashed" })
+db.address.createIndex({ "country": 1 })
 
 # Shard the collection
-sh.shardCollection("database-testing-sharding.address", { "city": "hashed" })
+sh.shardCollection("database-testing.address", { "country": 1 })
 
 5.
 #Set sharding on 100mb

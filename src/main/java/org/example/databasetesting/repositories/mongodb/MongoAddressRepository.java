@@ -22,4 +22,7 @@ public interface MongoAddressRepository extends MongoRepository<AddressDocument,
 
     @Transactional
     long deleteByCity(String city);
+
+    @Transactional
+    long deleteByCityAndCountry(String city, String country);
 }

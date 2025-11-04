@@ -12,15 +12,10 @@ import java.util.UUID;
 public class OrderDetailsDocument {
     @Id
     private ObjectId id;
-    @DBRef
     private ProductDocument product;
-    @DBRef
     private CategoryDocument category;
-    @DBRef
     private UserDocument winner;
-    @DBRef
     private AddressDocument shippingAddress;
-    @DBRef
     private CreditCardDocument creditCard;
     private LocalDate orderDate;
 

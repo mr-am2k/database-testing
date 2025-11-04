@@ -121,7 +121,8 @@ public class MongoDBServiceAddressImpl implements ActionsService<AddressDocument
         memoryMeasurements.get().clear();
 
         recordMetrics();
-        long result = this.updateCityByCity("Zavidovici", "Sarajevo");
+        //long result = this.updateCityByCity("Zavidovici", "Sarajevo");
+        long result = this.updateCityByCityAndCountry("Zavidovici", "Sarajevo", "Bosnia and Herzegovina");
         recordMetrics();
 
         double avgCpu = calculateAverage(cpuMeasurements.get());
@@ -141,7 +142,8 @@ public class MongoDBServiceAddressImpl implements ActionsService<AddressDocument
         memoryMeasurements.get().clear();
 
         recordMetrics();
-        long result = this.mongoAddressRepository.deleteByCity("Sarajevo");
+        //long result = this.mongoAddressRepository.deleteByCity("Sarajevo");
+        long result = this.mongoAddressRepository.deleteByCityAndCountry("Sarajevo", "Bosnia and Herzegovina");
         recordMetrics();
 
         double avgCpu = calculateAverage(cpuMeasurements.get());
@@ -162,4 +164,18 @@ public class MongoDBServiceAddressImpl implements ActionsService<AddressDocument
         UpdateResult result = this.mongoTemplate.updateMulti(query, update, AddressDocument.class);
         return result.getModifiedCount();
     }
+
+    // For the purpose of mongodb sharding
+    private long updateCityByCityAndCountry(String oldCity, String newCity, String country) {
+        Query query = new Query(
+                Criteria.where("city").is(oldCity)
+                        .and("country").is(country)
+        );
+
+        Update update = new Update().set("city", newCity);
+
+        UpdateResult result = this.mongoTemplate.updateMulti(query, update, AddressDocument.class);
+        return result.getModifiedCount();
+    }
+
 }

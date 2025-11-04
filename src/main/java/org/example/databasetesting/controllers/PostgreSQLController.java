@@ -153,12 +153,14 @@ public class PostgreSQLController {
 
     @PutMapping(path = "/simple-update")
     public DatabaseActionResponse simpleUpdate(
+            @RequestParam("recordsInDatabase") String recordsInDatabase,
             @RequestParam("numberOfRecords") String numberOfRecords,
             @RequestParam("caching") String caching) {
         final DatabaseActionResponse databaseActionResponse = this.genericServiceAddress.simpleUpdate(DatabaseType.POSTGRESQL);
 
         CSVUtil.saveUpdateResultsToCSV(
                 DatabaseType.POSTGRESQL.toString(),
+                recordsInDatabase,
                 numberOfRecords,
                 caching,
                 "SIMPLE",
@@ -172,12 +174,14 @@ public class PostgreSQLController {
 
     @PutMapping(path = "/complex-update")
     public DatabaseActionResponse complexUpdate(
+            @RequestParam("recordsInDatabase") String recordsInDatabase,
             @RequestParam("numberOfRecords") String numberOfRecords,
             @RequestParam("caching") String caching) {
         final DatabaseActionResponse databaseActionResponse = this.genericServiceUser.complexUpdate(DatabaseType.POSTGRESQL);
 
         CSVUtil.saveUpdateResultsToCSV(
                 DatabaseType.POSTGRESQL.toString(),
+                recordsInDatabase,
                 numberOfRecords,
                 caching,
                 "COMPLEX",
@@ -191,12 +195,14 @@ public class PostgreSQLController {
 
     @DeleteMapping(path = "/simple-delete")
     public DatabaseActionResponse simpleDelete(
+            @RequestParam("recordsInDatabase") String recordsInDatabase,
             @RequestParam("numberOfRecords") String numberOfRecords,
             @RequestParam("caching") String caching) {
         final DatabaseActionResponse databaseActionResponse = this.genericServiceAddress.simpleDelete(DatabaseType.POSTGRESQL);
 
-        CSVUtil.saveUpdateResultsToCSV(
+        CSVUtil.saveDeleteResultsToCSV(
                 DatabaseType.POSTGRESQL.toString(),
+                recordsInDatabase,
                 numberOfRecords,
                 caching,
                 "SIMPLE",
@@ -210,12 +216,14 @@ public class PostgreSQLController {
 
     @DeleteMapping(path = "/complex-delete")
     public DatabaseActionResponse complexDelete(
+            @RequestParam("recordsInDatabase") String recordsInDatabase,
             @RequestParam("numberOfRecords") String numberOfRecords,
             @RequestParam("caching") String caching) {
         final DatabaseActionResponse databaseActionResponse = this.genericServiceUser.complexDelete(DatabaseType.POSTGRESQL);
 
-        CSVUtil.saveUpdateResultsToCSV(
+        CSVUtil.saveDeleteResultsToCSV(
                 DatabaseType.POSTGRESQL.toString(),
+                recordsInDatabase,
                 numberOfRecords,
                 caching,
                 "COMPLEX",

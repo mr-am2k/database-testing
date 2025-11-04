@@ -166,12 +166,14 @@ public class MongoDBController {
     @PutMapping(path = "/simple-update")
     public DatabaseActionResponse simpleUpdate(
             @RequestParam("databaseType") String databaseType,
+            @RequestParam("recordsInDatabase") String recordsInDatabase,
             @RequestParam("numberOfRecords") String numberOfRecords,
             @RequestParam("caching") String caching) {
         final DatabaseActionResponse databaseActionResponse = this.genericServiceAddress.simpleUpdate(DatabaseType.MONGODB);
 
         CSVUtil.saveUpdateResultsToCSV(
                 databaseType,
+                recordsInDatabase,
                 numberOfRecords,
                 caching,
                 "SIMPLE",
@@ -186,12 +188,14 @@ public class MongoDBController {
     @PutMapping(path = "/complex-update")
     public DatabaseActionResponse complexUpdate(
             @RequestParam("databaseType") String databaseType,
+            @RequestParam("recordsInDatabase") String recordsInDatabase,
             @RequestParam("numberOfRecords") String numberOfRecords,
             @RequestParam("caching") String caching) {
         final DatabaseActionResponse databaseActionResponse = this.genericServiceUser.complexUpdate(DatabaseType.MONGODB);
 
         CSVUtil.saveUpdateResultsToCSV(
                 databaseType,
+                recordsInDatabase,
                 numberOfRecords,
                 caching,
                 "COMPLEX",
@@ -206,12 +210,14 @@ public class MongoDBController {
     @DeleteMapping(path = "/simple-delete")
     public DatabaseActionResponse simpleDelete(
             @RequestParam("databaseType") String databaseType,
+            @RequestParam("recordsInDatabase") String recordsInDatabase,
             @RequestParam("numberOfRecords") String numberOfRecords,
             @RequestParam("caching") String caching) {
         final DatabaseActionResponse databaseActionResponse = this.genericServiceAddress.simpleDelete(DatabaseType.MONGODB);
 
         CSVUtil.saveDeleteResultsToCSV(
                 databaseType,
+                recordsInDatabase,
                 numberOfRecords,
                 caching,
                 "SIMPLE",
@@ -226,12 +232,14 @@ public class MongoDBController {
     @DeleteMapping(path = "/complex-delete")
     public DatabaseActionResponse complexDelete(
             @RequestParam("databaseType") String databaseType,
+            @RequestParam("recordsInDatabase") String recordsInDatabase,
             @RequestParam("numberOfRecords") String numberOfRecords,
             @RequestParam("caching") String caching) {
         final DatabaseActionResponse databaseActionResponse = this.genericServiceUser.complexDelete(DatabaseType.MONGODB);
 
         CSVUtil.saveDeleteResultsToCSV(
                 databaseType,
+                recordsInDatabase,
                 numberOfRecords,
                 caching,
                 "COMPLEX",

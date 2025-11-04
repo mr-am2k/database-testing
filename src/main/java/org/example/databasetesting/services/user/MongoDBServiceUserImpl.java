@@ -111,7 +111,7 @@ public class MongoDBServiceUserImpl implements ActionServiceComplex<UserDocument
         memoryMeasurements.get().clear();
 
         recordMetrics();
-        long result = updateStatusByCityStatusCVV("ACTIVE","Zavidovici" , "Muamer","DEACTIVATED");
+        long result = this.updateStatusByCityCountryStatusCVV("ACTIVE","Zavidovici" , "Bosnia and Herzegovina","Muamer","DEACTIVATED");
         recordMetrics();
 
         double avgCpu = calculateAverage(cpuMeasurements.get());
@@ -131,7 +131,8 @@ public class MongoDBServiceUserImpl implements ActionServiceComplex<UserDocument
         memoryMeasurements.get().clear();
 
         recordMetrics();
-        long result = this.mongoUserRepository.deleteByStatusAndAddress_CityAndCreditCard_Name("DEACTIVATED","Zavidovici" , "Muamer");
+        long result = this.mongoUserRepository.deleteByStatusAndAddress_CityAndAddress_CountryAndCreditCard_Name("DEACTIVATED","Zavidovici" , "Bosnia and Herzegovina","Muamer");
+
         recordMetrics();
 
         double avgCpu = calculateAverage(cpuMeasurements.get());
@@ -156,6 +157,25 @@ public class MongoDBServiceUserImpl implements ActionServiceComplex<UserDocument
         Query query = new Query();
         query.addCriteria(Criteria.where("status").is(oldStatus));
         query.addCriteria(Criteria.where("address.city").is(city));
+        query.addCriteria(Criteria.where("creditCard.name").is(name));
+
+        Update update = new Update().set("status", newStatus);
+
+        UpdateResult result = mongoTemplate.updateMulti(query, update, UserDocument.class);
+        return result.getModifiedCount();
+    }
+
+    private long updateStatusByCityCountryStatusCVV(
+            String oldStatus,
+            String city,
+            String country,
+            String name,
+            String newStatus
+    ) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("status").is(oldStatus));
+        query.addCriteria(Criteria.where("address.city").is(city));
+        query.addCriteria(Criteria.where("address.country").is(country));
         query.addCriteria(Criteria.where("creditCard.name").is(name));
 
         Update update = new Update().set("status", newStatus);

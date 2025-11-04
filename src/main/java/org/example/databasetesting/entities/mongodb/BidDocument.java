@@ -14,9 +14,7 @@ public class BidDocument {
     private ObjectId id;
     private double amount;
     private LocalDate bidTime;
-    @DBRef
     private ProductDocument product;
-    @DBRef
     private UserDocument user;
 
     public ObjectId getId() {

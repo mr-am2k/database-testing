@@ -15,13 +15,11 @@ public class ProductDocument {
     private ObjectId id;
     private String name;
     private String description;
-    @DBRef
     private CategoryDocument category;
     private double startPrice;
     private LocalDate startDate;
     private LocalDate endDate;
     private String status;
-    @DBRef
     private UserDocument seller;
 
     public ObjectId getId() {

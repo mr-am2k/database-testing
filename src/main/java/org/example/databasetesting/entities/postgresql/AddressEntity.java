@@ -10,7 +10,6 @@ public class AddressEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
-
     private String address;
     private String city;
     private String country;

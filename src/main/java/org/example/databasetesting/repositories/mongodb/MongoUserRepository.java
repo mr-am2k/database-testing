@@ -26,4 +26,8 @@ public interface MongoUserRepository extends MongoRepository<UserDocument, UUID>
     long deleteByStatusAndAddress_CityAndCreditCard_Name(
             String status, String city, String cardName
     );
+
+    long deleteByStatusAndAddress_CityAndAddress_CountryAndCreditCard_Name(
+            String status, String city, String country, String cardName
+    );
 }

@@ -13,7 +13,6 @@ public class UserDocument {
     private String email;
     private String password;
     private String status;
-
     private AddressDocument address;
     private CreditCardDocument creditCard;
 

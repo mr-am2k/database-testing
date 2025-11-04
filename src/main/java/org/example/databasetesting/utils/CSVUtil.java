@@ -37,13 +37,13 @@ public class CSVUtil {
 
     private static final String UPDATE_RESULTS_CSV_FILENAME = "update.csv";
     private static final String[] UPDATE_CSV_HEADERS = {
-            "databaseType", "numberOfRecords", "caching",
+            "databaseType", "recordsInDatabase", "numberOfRecords", "caching",
             "queryType", "executionTime", "ramUsage", "cpuUsage"
     };
 
     private static final String DELETE_RESULTS_CSV_FILENAME = "delete.csv";
     private static final String[] DELETE_CSV_HEADERS = {
-            "databaseType", "numberOfRecords", "caching",
+            "databaseType", "recordsInDatabase", "numberOfRecords", "caching",
             "queryType", "executionTime", "ramUsage", "cpuUsage"
     };
 
@@ -274,6 +274,7 @@ public class CSVUtil {
 
     public static void saveUpdateResultsToCSV(
             String databaseType,
+            String recordsInDatabase,
             String numberOfRecords,
             String caching,
             String queryType,
@@ -303,6 +304,7 @@ public class CSVUtil {
 
                 String[] dataRow = {
                         databaseType,
+                        recordsInDatabase,
                         numberOfRecords,
                         caching,
                         queryType,
@@ -325,6 +327,7 @@ public class CSVUtil {
 
     public static void saveDeleteResultsToCSV(
             String databaseType,
+            String recordsInDatabase,
             String numberOfRecords,
             String caching,
             String queryType,
@@ -354,6 +357,7 @@ public class CSVUtil {
 
                 String[] dataRow = {
                         databaseType,
+                        recordsInDatabase,
                         numberOfRecords,
                         caching,
                         queryType,
