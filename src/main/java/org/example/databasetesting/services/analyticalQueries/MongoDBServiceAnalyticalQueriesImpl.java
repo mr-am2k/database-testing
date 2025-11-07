@@ -3,6 +3,7 @@ package org.example.databasetesting.services.analyticalQueries;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.example.databasetesting.repositories.mongodb.MongoBidRepository;
 import org.example.databasetesting.response.AnalyticalQuery1Response;
+import org.example.databasetesting.response.AnalyticalQuery2Response;
 import org.example.databasetesting.response.DatabaseActionResponse;
 import org.example.databasetesting.services.ActionServiceAnalyticalQueries;
 import org.slf4j.Logger;
@@ -22,7 +23,8 @@ public class MongoDBServiceAnalyticalQueriesImpl implements ActionServiceAnalyti
     private final ThreadLocal<List<Long>> cpuMeasurements = ThreadLocal.withInitial(CopyOnWriteArrayList::new);
     private final ThreadLocal<List<Long>> memoryMeasurements = ThreadLocal.withInitial(CopyOnWriteArrayList::new);
 
-    public MongoDBServiceAnalyticalQueriesImpl(MeterRegistry meterRegistry, MongoBidRepository mongoBidRepository) {
+    public MongoDBServiceAnalyticalQueriesImpl(MeterRegistry meterRegistry, 
+                                                MongoBidRepository mongoBidRepository) {
         this.meterRegistry = meterRegistry;
         this.mongoBidRepository = mongoBidRepository;
     }
@@ -106,15 +108,23 @@ public class MongoDBServiceAnalyticalQueriesImpl implements ActionServiceAnalyti
                 String.format("%.2fMB", avgMemory / 1_048_576));
     }
 
-    // Example: Add more query methods here
-    // @Override
-    // public DatabaseActionResponse analyticalQuery2() {
-    //     return executeQuery(
-    //             () -> mongoBidRepository.someOtherAnalyticalMethod(),
-    //             "mongodb.analytical.query2",
-    //             (result) -> {
-    //                 // Log the result
-    //             }
-    //     );
-    // }
+    @Override
+    public DatabaseActionResponse analyticalQuery2() {
+        AnalyticalQuery2Response result = executeQuery(
+                () -> mongoBidRepository.getUserBiddingStatistics(),
+                "mongodb.analytical.query2",
+                (stats) -> {
+                    log.info("=== MongoDB Analytical Query 2 Results ===");
+                    log.info("User Bidding Statistics:");
+                    log.info("  Median bids per user: {}", stats.getMedianBidsPerUser());
+                    log.info("  P90 bids per user: {}", stats.getP90BidsPerUser());
+                    log.info("  Max bids by a user: {}", stats.getMaxBidsByAUser());
+                    log.info("==========================================");
+                }
+        );
+        return createDatabaseActionResponse();
+    }
+
+    // Note: The aggregation logic for analytical queries is now handled in the respective repositories
+    // using the @Aggregation annotation. This approach is cleaner and follows the repository pattern.
 }

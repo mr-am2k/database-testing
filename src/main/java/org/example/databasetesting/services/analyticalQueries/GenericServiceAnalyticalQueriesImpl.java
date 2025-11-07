@@ -47,9 +47,8 @@ public class GenericServiceAnalyticalQueriesImpl implements GenericServiceAnalyt
         return executeWithTimeTracking(databaseType, ActionServiceAnalyticalQueries::analyticalQuery1);
     }
 
-    // Example: Add more query methods here
-    // @Override
-    // public DatabaseActionResponse analyticalQuery2(DatabaseType databaseType) {
-    //     return executeWithTimeTracking(databaseType, ActionServiceAnalyticalQueries::analyticalQuery2);
-    // }
+    @Override
+    public DatabaseActionResponse analyticalQuery2(DatabaseType databaseType) {
+        return executeWithTimeTracking(databaseType, ActionServiceAnalyticalQueries::analyticalQuery2);
+    }
 }

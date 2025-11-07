@@ -2,6 +2,7 @@ package org.example.databasetesting.repositories.mongodb;
 
 import org.example.databasetesting.entities.mongodb.BidDocument;
 import org.example.databasetesting.response.AnalyticalQuery1Response;
+import org.example.databasetesting.response.AnalyticalQuery2Response;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.bson.types.ObjectId;
@@ -53,5 +54,57 @@ public interface MongoBidRepository extends MongoRepository<BidDocument, ObjectI
                     "} }"
     })
     AnalyticalQuery1Response getBidCountDistribution();
+
+    /**
+     * Analytical Query 2: User bidding behavior statistics for MongoDB
+     *
+     * Computes statistics about bids per user:
+     *  - Median bids per user (p50)
+     *  - P90 bids per user
+     *  - Maximum bids by any single user
+     *
+     * Pipeline stages (3 total):
+     *  1. Group by user._id and count bids per user
+     *  2. Group all results and calculate percentiles using $percentile operator
+     *  3. Project results with proper field names
+     *
+     * MongoDB Schema Notes:
+     *  - Operates on 'bids' collection (this repository's entity)
+     *  - bids have embedded 'user' object with _id
+     *  - Uses $percentile operator (MongoDB 7.0+) with approximate method
+     *  - Returns single document with aggregate statistics
+     */
+    @Aggregation(pipeline = {
+            "{ $group: { " +
+                    "_id: '$user._id', " +
+                    "cnt: { $sum: 1 } " +
+                    "} }",
+
+            // Stage 2: Calculate statistics across all users
+            "{ $group: { " +
+                    "_id: null, " +
+                    "all_counts: { $push: '$cnt' }, " +
+                    "max: { $max: '$cnt' } " +
+                    "} }",
+
+            // Stage 3: Calculate percentiles and project with camelCase field names
+            "{ $project: { " +
+                    "_id: 0, " +
+                    "medianBidsPerUser: { " +
+                    "$arrayElemAt: [ " +
+                    "{ $percentile: { input: '$all_counts', p: [0.5], method: 'approximate' } }, " +
+                    "0 " +
+                    "] " +
+                    "}, " +
+                    "p90BidsPerUser: { " +
+                    "$arrayElemAt: [ " +
+                    "{ $percentile: { input: '$all_counts', p: [0.9], method: 'approximate' } }, " +
+                    "0 " +
+                    "] " +
+                    "}, " +
+                    "maxBidsByAUser: { $toLong: '$max' } " +
+                    "} }"
+    })
+    AnalyticalQuery2Response getUserBiddingStatistics();
 }
 

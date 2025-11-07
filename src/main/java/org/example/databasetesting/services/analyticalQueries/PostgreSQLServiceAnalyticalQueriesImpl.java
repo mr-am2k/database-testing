@@ -2,7 +2,9 @@ package org.example.databasetesting.services.analyticalQueries;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import org.example.databasetesting.repositories.postgresql.PostgreSQLBidRepository;
+import org.example.databasetesting.repositories.postgresql.PostgreSQLCategoryRepository;
 import org.example.databasetesting.response.AnalyticalQuery1Projection;
+import org.example.databasetesting.response.AnalyticalQuery2Projection;
 import org.example.databasetesting.response.DatabaseActionResponse;
 import org.example.databasetesting.services.ActionServiceAnalyticalQueries;
 import org.slf4j.Logger;
@@ -19,12 +21,16 @@ public class PostgreSQLServiceAnalyticalQueriesImpl implements ActionServiceAnal
     private static final Logger log = LoggerFactory.getLogger(PostgreSQLServiceAnalyticalQueriesImpl.class);
     private final MeterRegistry meterRegistry;
     private final PostgreSQLBidRepository postgreSQLBidRepository;
+    private final PostgreSQLCategoryRepository postgreSQLCategoryRepository;
     private final ThreadLocal<List<Long>> cpuMeasurements = ThreadLocal.withInitial(CopyOnWriteArrayList::new);
     private final ThreadLocal<List<Long>> memoryMeasurements = ThreadLocal.withInitial(CopyOnWriteArrayList::new);
 
-    public PostgreSQLServiceAnalyticalQueriesImpl(MeterRegistry meterRegistry, PostgreSQLBidRepository postgreSQLBidRepository) {
+    public PostgreSQLServiceAnalyticalQueriesImpl(MeterRegistry meterRegistry, 
+                                                   PostgreSQLBidRepository postgreSQLBidRepository,
+                                                   PostgreSQLCategoryRepository postgreSQLCategoryRepository) {
         this.meterRegistry = meterRegistry;
         this.postgreSQLBidRepository = postgreSQLBidRepository;
+        this.postgreSQLCategoryRepository = postgreSQLCategoryRepository;
     }
 
     private synchronized void recordMetrics() {
@@ -105,15 +111,20 @@ public class PostgreSQLServiceAnalyticalQueriesImpl implements ActionServiceAnal
                 String.format("%.2fMB", avgMemory / 1_048_576));
     }
 
-    // Example: Add more query methods here
-    // @Override
-    // public DatabaseActionResponse analyticalQuery2() {
-    //     return executeQuery(
-    //             () -> {
-    //                 // Your query here - can return any projection type
-    //                 SomeOtherProjection result = repository.someOtherMethod();
-    //             },
-    //             "postgres.analytical.query2"
-    //     );
-    // }
+    @Override
+    public DatabaseActionResponse analyticalQuery2() {
+        AnalyticalQuery2Projection result = executeQuery(
+                () -> postgreSQLCategoryRepository.getUserBiddingStatistics(),
+                "postgres.analytical.query2",
+                (stats) -> {
+                    log.info("=== PostgreSQL Analytical Query 2 Results ===");
+                    log.info("User Bidding Statistics:");
+                    log.info("  Median bids per user: {}", stats.getMedianBidsPerUser());
+                    log.info("  P90 bids per user: {}", stats.getP90BidsPerUser());
+                    log.info("  Max bids by a user: {}", stats.getMaxBidsByAUser());
+                    log.info("=============================================");
+                }
+        );
+        return createDatabaseActionResponse();
+    }
 }

@@ -239,8 +239,30 @@ public class PostgreSQLController {
     }
 
     @GetMapping(path = "/analytical-query-1")
-    public DatabaseActionResponse analyticalQuery1() {
+    public DatabaseActionResponse analyticalQuery1(
+            @RequestParam("numberOfRecords") String numberOfRecords,
+            @RequestParam("caching") String caching,
+            @RequestParam("indexing") String indexing) {
         final DatabaseActionResponse databaseActionResponse = this.genericServiceAnalyticalQueries.analyticalQuery1(DatabaseType.POSTGRESQL);
+
+        CSVUtil.saveReadResultsToCSV(
+                DatabaseType.POSTGRESQL.toString(),
+                numberOfRecords,
+                caching,
+                "ANALYTICAL_QUERY_1",
+                "ANALYTICAL",
+                indexing,
+                databaseActionResponse.getTime(),
+                databaseActionResponse.getRamUsage(),
+                databaseActionResponse.getCpuUsage()
+        );
+
+        return databaseActionResponse;
+    }
+
+    @GetMapping(path = "/analytical-query-2")
+    public DatabaseActionResponse analyticalQuery2() {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceAnalyticalQueries.analyticalQuery2(DatabaseType.POSTGRESQL);
 
         return databaseActionResponse;
     }

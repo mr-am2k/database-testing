@@ -260,4 +260,11 @@ public class MongoDBController {
 
         return databaseActionResponse;
     }
+
+    @GetMapping(path = "/analytical-query-2")
+    public DatabaseActionResponse analyticalQuery2() {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceAnalyticalQueries.analyticalQuery2(DatabaseType.MONGODB);
+
+        return databaseActionResponse;
+    }
 }
