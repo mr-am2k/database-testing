@@ -5,6 +5,9 @@ import org.example.databasetesting.repositories.postgresql.PostgreSQLBidReposito
 import org.example.databasetesting.repositories.postgresql.PostgreSQLCategoryRepository;
 import org.example.databasetesting.response.AnalyticalQuery1Projection;
 import org.example.databasetesting.response.AnalyticalQuery2Projection;
+import org.example.databasetesting.response.AnalyticalQuery3Projection;
+import org.example.databasetesting.response.AnalyticalQuery4Projection;
+import org.example.databasetesting.response.AnalyticalQuery5Projection;
 import org.example.databasetesting.response.DatabaseActionResponse;
 import org.example.databasetesting.services.ActionServiceAnalyticalQueries;
 import org.slf4j.Logger;
@@ -114,7 +117,7 @@ public class PostgreSQLServiceAnalyticalQueriesImpl implements ActionServiceAnal
     @Override
     public DatabaseActionResponse analyticalQuery2() {
         AnalyticalQuery2Projection result = executeQuery(
-                () -> postgreSQLCategoryRepository.getUserBiddingStatistics(),
+                () -> postgreSQLBidRepository.getUserBiddingStatistics(),
                 "postgres.analytical.query2",
                 (stats) -> {
                     log.info("=== PostgreSQL Analytical Query 2 Results ===");
@@ -122,6 +125,63 @@ public class PostgreSQLServiceAnalyticalQueriesImpl implements ActionServiceAnal
                     log.info("  Median bids per user: {}", stats.getMedianBidsPerUser());
                     log.info("  P90 bids per user: {}", stats.getP90BidsPerUser());
                     log.info("  Max bids by a user: {}", stats.getMaxBidsByAUser());
+                    log.info("=============================================");
+                }
+        );
+        return createDatabaseActionResponse();
+    }
+
+    @Override
+    public DatabaseActionResponse analyticalQuery3() {
+        List<AnalyticalQuery3Projection> results = executeQuery(
+                () -> postgreSQLCategoryRepository.getTopCategoriesBySales(),
+                "postgres.analytical.query3",
+                (categoryStats) -> {
+                    log.info("=== PostgreSQL Analytical Query 3 Results ===");
+                    log.info("Top 10 Categories by Sales - {} categories:", categoryStats.size());
+                    categoryStats.forEach(stat -> {
+                        log.info("  Category: {}, Total Sold: {}, Revenue: ${}", 
+                                stat.getCategoryName(), stat.getTotalSold(), stat.getTotalRevenue());
+                    });
+                    log.info("=============================================");
+                }
+        );
+        return createDatabaseActionResponse();
+    }
+
+    @Override
+    public DatabaseActionResponse analyticalQuery4() {
+        List<AnalyticalQuery4Projection> results = executeQuery(
+                () -> postgreSQLBidRepository.getTopBiddersByActivity(),
+                "postgres.analytical.query4",
+                (bidderStats) -> {
+                    log.info("=== PostgreSQL Analytical Query 4 Results ===");
+                    log.info("Top 20 Users by Total Bids - {} users:", bidderStats.size());
+                    bidderStats.stream().limit(5).forEach(stat -> {
+                        log.info("  User ID: {}, Email: {}, Total Bids: {}", 
+                                stat.getUserId(), stat.getEmail(), stat.getTotalBids());
+                    });
+                    log.info("=============================================");
+                }
+        );
+        return createDatabaseActionResponse();
+    }
+
+    @Override
+    public DatabaseActionResponse analyticalQuery5() {
+        List<AnalyticalQuery5Projection> results = executeQuery(
+                () -> postgreSQLBidRepository.getOrdersByCountry(),
+                "postgres.analytical.query5",
+                (countryData) -> {
+                    log.info("=== PostgreSQL Analytical Query 5 Results ===");
+                    log.info("Orders by Country - {} countries:", countryData.size());
+                    countryData.stream().limit(10).forEach(data -> {
+                        log.info("  Country: {}, Orders: {}", 
+                                data.getCountry(), data.getOrders());
+                    });
+                    if (countryData.size() > 10) {
+                        log.info("  ... and {} more", countryData.size() - 10);
+                    }
                     log.info("=============================================");
                 }
         );

@@ -6,6 +6,7 @@ import org.example.databasetesting.utils.DatabaseType;
 public interface GenericServiceAnalyticalQueries {
     DatabaseActionResponse analyticalQuery1(DatabaseType databaseType);
     DatabaseActionResponse analyticalQuery2(DatabaseType databaseType);
-    // Add more analytical query methods here as needed with different response types
-    // DatabaseActionResponse analyticalQuery3(DatabaseType databaseType);
+    DatabaseActionResponse analyticalQuery3(DatabaseType databaseType);
+    DatabaseActionResponse analyticalQuery4(DatabaseType databaseType);
+    DatabaseActionResponse analyticalQuery5(DatabaseType databaseType);
 }

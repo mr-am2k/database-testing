@@ -267,4 +267,25 @@ public class MongoDBController {
 
         return databaseActionResponse;
     }
+
+    @GetMapping(path = "/analytical-query-3")
+    public DatabaseActionResponse analyticalQuery3() {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceAnalyticalQueries.analyticalQuery3(DatabaseType.MONGODB);
+
+        return databaseActionResponse;
+    }
+
+    @GetMapping(path = "/analytical-query-4")
+    public DatabaseActionResponse analyticalQuery4() {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceAnalyticalQueries.analyticalQuery4(DatabaseType.MONGODB);
+
+        return databaseActionResponse;
+    }
+
+    @GetMapping(path = "/analytical-query-5")
+    public DatabaseActionResponse analyticalQuery5() {
+        final DatabaseActionResponse databaseActionResponse = this.genericServiceAnalyticalQueries.analyticalQuery5(DatabaseType.MONGODB);
+
+        return databaseActionResponse;
+    }
 }

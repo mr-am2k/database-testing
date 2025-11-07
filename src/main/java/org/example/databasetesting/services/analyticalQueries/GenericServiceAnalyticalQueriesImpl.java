@@ -18,10 +18,6 @@ public class GenericServiceAnalyticalQueriesImpl implements GenericServiceAnalyt
         strategies.put(DatabaseType.MONGODB, mongoDBService);
     }
 
-    /**
-     * Helper method to execute a query and track total execution time.
-     * The individual database services already track CPU and RAM.
-     */
     private DatabaseActionResponse executeWithTimeTracking(
             DatabaseType databaseType,
             java.util.function.Function<ActionServiceAnalyticalQueries, DatabaseActionResponse> queryExecutor) {
@@ -50,5 +46,20 @@ public class GenericServiceAnalyticalQueriesImpl implements GenericServiceAnalyt
     @Override
     public DatabaseActionResponse analyticalQuery2(DatabaseType databaseType) {
         return executeWithTimeTracking(databaseType, ActionServiceAnalyticalQueries::analyticalQuery2);
+    }
+
+    @Override
+    public DatabaseActionResponse analyticalQuery3(DatabaseType databaseType) {
+        return executeWithTimeTracking(databaseType, ActionServiceAnalyticalQueries::analyticalQuery3);
+    }
+
+    @Override
+    public DatabaseActionResponse analyticalQuery4(DatabaseType databaseType) {
+        return executeWithTimeTracking(databaseType, ActionServiceAnalyticalQueries::analyticalQuery4);
+    }
+
+    @Override
+    public DatabaseActionResponse analyticalQuery5(DatabaseType databaseType) {
+        return executeWithTimeTracking(databaseType, ActionServiceAnalyticalQueries::analyticalQuery5);
     }
 }

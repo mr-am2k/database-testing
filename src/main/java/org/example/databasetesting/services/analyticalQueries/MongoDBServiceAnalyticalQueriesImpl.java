@@ -2,8 +2,12 @@ package org.example.databasetesting.services.analyticalQueries;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import org.example.databasetesting.repositories.mongodb.MongoBidRepository;
+import org.example.databasetesting.repositories.mongodb.MongoOrderDetailsRepository;
 import org.example.databasetesting.response.AnalyticalQuery1Response;
 import org.example.databasetesting.response.AnalyticalQuery2Response;
+import org.example.databasetesting.response.AnalyticalQuery3Response;
+import org.example.databasetesting.response.AnalyticalQuery4Response;
+import org.example.databasetesting.response.AnalyticalQuery5Response;
 import org.example.databasetesting.response.DatabaseActionResponse;
 import org.example.databasetesting.services.ActionServiceAnalyticalQueries;
 import org.slf4j.Logger;
@@ -20,13 +24,16 @@ public class MongoDBServiceAnalyticalQueriesImpl implements ActionServiceAnalyti
     private static final Logger log = LoggerFactory.getLogger(MongoDBServiceAnalyticalQueriesImpl.class);
     private final MeterRegistry meterRegistry;
     private final MongoBidRepository mongoBidRepository;
+    private final MongoOrderDetailsRepository mongoOrderDetailsRepository;
     private final ThreadLocal<List<Long>> cpuMeasurements = ThreadLocal.withInitial(CopyOnWriteArrayList::new);
     private final ThreadLocal<List<Long>> memoryMeasurements = ThreadLocal.withInitial(CopyOnWriteArrayList::new);
 
-    public MongoDBServiceAnalyticalQueriesImpl(MeterRegistry meterRegistry, 
-                                                MongoBidRepository mongoBidRepository) {
+    public MongoDBServiceAnalyticalQueriesImpl(MeterRegistry meterRegistry,
+                                                MongoBidRepository mongoBidRepository,
+                                                MongoOrderDetailsRepository mongoOrderDetailsRepository) {
         this.meterRegistry = meterRegistry;
         this.mongoBidRepository = mongoBidRepository;
+        this.mongoOrderDetailsRepository = mongoOrderDetailsRepository;
     }
 
     private synchronized void recordMetrics() {
@@ -125,6 +132,60 @@ public class MongoDBServiceAnalyticalQueriesImpl implements ActionServiceAnalyti
         return createDatabaseActionResponse();
     }
 
-    // Note: The aggregation logic for analytical queries is now handled in the respective repositories
-    // using the @Aggregation annotation. This approach is cleaner and follows the repository pattern.
+    @Override
+    public DatabaseActionResponse analyticalQuery3() {
+        List<AnalyticalQuery3Response> results = executeQuery(
+                () -> mongoOrderDetailsRepository.getTopCategoriesBySales(),
+                "mongodb.analytical.query3",
+                (categoryStats) -> {
+                    log.info("=== MongoDB Analytical Query 3 Results ===");
+                    log.info("Top 10 Categories by Sales - {} categories:", categoryStats.size());
+                    categoryStats.forEach(stat -> {
+                        log.info("  Category: {}, Total Sold: {}, Revenue: ${}", 
+                                stat.getCategoryName(), stat.getTotalSold(), stat.getTotalRevenue());
+                    });
+                    log.info("==========================================");
+                }
+        );
+        return createDatabaseActionResponse();
+    }
+
+    @Override
+    public DatabaseActionResponse analyticalQuery4() {
+        List<AnalyticalQuery4Response> results = executeQuery(
+                () -> mongoBidRepository.getTopBiddersByActivity(),
+                "mongodb.analytical.query4",
+                (bidderStats) -> {
+                    log.info("=== MongoDB Analytical Query 4 Results ===");
+                    log.info("Top 20 Users by Total Bids - {} users:", bidderStats.size());
+                    bidderStats.stream().limit(5).forEach(stat -> {
+                        log.info("  User ID: {}, Email: {}, Total Bids: {}", 
+                                stat.getUserId(), stat.getEmail(), stat.getTotalBids());
+                    });
+                    log.info("==========================================");
+                }
+        );
+        return createDatabaseActionResponse();
+    }
+
+    @Override
+    public DatabaseActionResponse analyticalQuery5() {
+        List<AnalyticalQuery5Response> results = executeQuery(
+                () -> mongoOrderDetailsRepository.getOrdersByCountry(),
+                "mongodb.analytical.query5",
+                (countryData) -> {
+                    log.info("=== MongoDB Analytical Query 5 Results ===");
+                    log.info("Orders by Country - {} countries:", countryData.size());
+                    countryData.stream().limit(10).forEach(data -> {
+                        log.info("  Country: {}, Orders: {}", 
+                                data.getCountry(), data.getOrders());
+                    });
+                    if (countryData.size() > 10) {
+                        log.info("  ... and {} more", countryData.size() - 10);
+                    }
+                    log.info("==========================================");
+                }
+        );
+        return createDatabaseActionResponse();
+    }
 }
