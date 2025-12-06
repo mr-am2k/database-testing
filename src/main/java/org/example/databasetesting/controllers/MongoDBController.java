@@ -257,12 +257,14 @@ public class MongoDBController {
     @GetMapping(path = "/analytical-query-1")
     public DatabaseActionResponse analyticalQuery1(
             @RequestParam("databaseType") String databaseType,
+            @RequestParam("numberOfRecords") String numberOfRecords,
             @RequestParam("caching") String caching
     ) {
         final DatabaseActionResponse databaseActionResponse = this.genericServiceAnalyticalQueries.analyticalQuery1(DatabaseType.MONGODB);
 
         CSVUtil.saveAnalyticalQueryResultsToCSV(
                 databaseType,
+                numberOfRecords,
                 "ANALYTICAL QUERY 1",
                 caching,
                 databaseActionResponse.getTime(),
@@ -276,12 +278,14 @@ public class MongoDBController {
     @GetMapping(path = "/analytical-query-2")
     public DatabaseActionResponse analyticalQuery2(
             @RequestParam("databaseType") String databaseType,
+            @RequestParam("numberOfRecords") String numberOfRecords,
             @RequestParam("caching") String caching
     ) {
         final DatabaseActionResponse databaseActionResponse = this.genericServiceAnalyticalQueries.analyticalQuery2(DatabaseType.MONGODB);
 
         CSVUtil.saveAnalyticalQueryResultsToCSV(
                 databaseType,
+                numberOfRecords,
                 "ANALYTICAL QUERY 2",
                 caching,
                 databaseActionResponse.getTime(),
@@ -295,12 +299,14 @@ public class MongoDBController {
     @GetMapping(path = "/analytical-query-3")
     public DatabaseActionResponse analyticalQuery3(
             @RequestParam("databaseType") String databaseType,
+            @RequestParam("numberOfRecords") String numberOfRecords,
             @RequestParam("caching") String caching
     ) {
         final DatabaseActionResponse databaseActionResponse = this.genericServiceAnalyticalQueries.analyticalQuery3(DatabaseType.MONGODB);
 
         CSVUtil.saveAnalyticalQueryResultsToCSV(
                 databaseType,
+                numberOfRecords,
                 "ANALYTICAL QUERY 3",
                 caching,
                 databaseActionResponse.getTime(),
@@ -314,12 +320,14 @@ public class MongoDBController {
     @GetMapping(path = "/analytical-query-4")
     public DatabaseActionResponse analyticalQuery4(
             @RequestParam("databaseType") String databaseType,
+            @RequestParam("numberOfRecords") String numberOfRecords,
             @RequestParam("caching") String caching
     ) {
         final DatabaseActionResponse databaseActionResponse = this.genericServiceAnalyticalQueries.analyticalQuery4(DatabaseType.MONGODB);
 
         CSVUtil.saveAnalyticalQueryResultsToCSV(
                 databaseType,
+                numberOfRecords,
                 "ANALYTICAL QUERY 4",
                 caching,
                 databaseActionResponse.getTime(),
@@ -333,12 +341,14 @@ public class MongoDBController {
     @GetMapping(path = "/analytical-query-5")
     public DatabaseActionResponse analyticalQuery5(
             @RequestParam("databaseType") String databaseType,
+            @RequestParam("numberOfRecords") String numberOfRecords,
             @RequestParam("caching") String caching
     ) {
         final DatabaseActionResponse databaseActionResponse = this.genericServiceAnalyticalQueries.analyticalQuery5(DatabaseType.MONGODB);
 
         CSVUtil.saveAnalyticalQueryResultsToCSV(
                 databaseType,
+                numberOfRecords,
                 "ANALYTICAL QUERY 5",
                 caching,
                 databaseActionResponse.getTime(),

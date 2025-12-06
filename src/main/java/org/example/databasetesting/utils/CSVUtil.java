@@ -49,7 +49,7 @@ public class CSVUtil {
 
     private static final String ANALYTICAL_RESULTS_CSV_FILENAME = "analytical.csv";
     private static final String[] ANALYTICAL_CSV_HEADERS = {
-            "databaseType", "queryName", "caching", "executionTime", "ramUsage", "cpuUsage"
+            "databaseType", "numberOfRecords", "queryName", "caching", "executionTime", "ramUsage", "cpuUsage"
     };
 
     public static <T> List<List<T>> parseCSV(MultipartFile file, Class<T> clazz, int batchSize) {
@@ -394,6 +394,7 @@ public class CSVUtil {
      */
     public static void saveAnalyticalQueryResultsToCSV(
             String databaseType,
+            String numberOfRecords,
             String queryName,
             String caching,
             long executionTime,
@@ -422,6 +423,7 @@ public class CSVUtil {
 
                 String[] dataRow = {
                         databaseType,
+                        numberOfRecords,
                         queryName,
                         caching,
                         String.valueOf(executionTime),

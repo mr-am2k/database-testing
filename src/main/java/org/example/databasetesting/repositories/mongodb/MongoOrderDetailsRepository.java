@@ -36,18 +36,19 @@ public interface MongoOrderDetailsRepository extends MongoRepository<OrderDetail
     List<AnalyticalQuery3Response> getTopCategoriesBySales();
 
     @Aggregation(pipeline = {
+            // Stage 1: Group by country and count orders
             "{ $group: { " +
                     "_id: '$shippingAddress.country', " +
                     "orders: { $sum: 1 } " +
                 "} }",
+            // Stage 2: Sort by orders descending (before projection for better performance)
+            "{ $sort: { orders: -1 } }",
+            // Stage 3: Project with camelCase field names (after sort to reduce projection overhead)
             "{ $project: { " +
                     "_id: 0, " +
                     "country: '$_id', " +
                     "orders: { $toLong: '$orders' } " +
-                "} }",
-            
-            // Stage 3: Sort by orders descending
-            "{ $sort: { orders: -1 } }"
+                "} }"
     })
     List<AnalyticalQuery5Response> getOrdersByCountry();
 

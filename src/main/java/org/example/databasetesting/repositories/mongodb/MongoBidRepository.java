@@ -64,19 +64,23 @@ public interface MongoBidRepository extends MongoRepository<BidDocument, ObjectI
     AnalyticalQuery2Response getUserBiddingStatistics();
 
     @Aggregation(pipeline = {
+            // Stage 1: Group by user ID and count bids
             "{ $group: { " +
                     "_id: '$user._id', " +
                     "total_bids: { $sum: 1 }, " +
                     "email: { $first: '$user.email' } " +
                 "} }",
+            // Stage 2: Sort by total_bids descending, then _id ascending (before limit for better performance)
+            "{ $sort: { total_bids: -1, _id: 1 } }",
+            // Stage 3: Limit to top 20 (before projection to reduce overhead)
+            "{ $limit: 20 }",
+            // Stage 4: Project with camelCase field names (only projects top 20, not all documents)
             "{ $project: { " +
                     "_id: 0, " +
                     "userId: { $toString: '$_id' }, " +
                     "email: 1, " +
                     "totalBids: { $toLong: '$total_bids' } " +
-                "} }",
-            "{ $sort: { totalBids: -1, userId: 1 } }",
-            "{ $limit: 20 }"
+                "} }"
     })
     List<AnalyticalQuery4Response> getTopBiddersByActivity();
 }
