@@ -9,7 +9,7 @@ import java.util.UUID;
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    private Integer id;
 
     private String firstName;
     private String lastName;
@@ -25,11 +25,11 @@ public class UserEntity {
     @JoinColumn(name = "credit_card_id")
     private CreditCardEntity creditCard;
 
-    public UUID getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

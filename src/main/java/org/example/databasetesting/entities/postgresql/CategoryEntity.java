@@ -9,7 +9,7 @@ import java.util.UUID;
 public class CategoryEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    private Integer id;
 
     private String name;
 
@@ -21,11 +21,11 @@ public class CategoryEntity {
         this.name = name;
     }
 
-    public UUID getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

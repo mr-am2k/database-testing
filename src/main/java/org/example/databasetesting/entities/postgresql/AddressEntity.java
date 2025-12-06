@@ -9,7 +9,7 @@ import java.util.UUID;
 public class AddressEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    private Integer id;
     private String address;
     private String city;
     private String country;
@@ -41,11 +41,11 @@ public class AddressEntity {
         this.address = address;
     }
 
-    public UUID getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

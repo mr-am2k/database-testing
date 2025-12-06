@@ -10,7 +10,7 @@ import java.util.UUID;
 public class ProductEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    private Integer id;
 
     private String name;
     private String description;
@@ -27,11 +27,11 @@ public class ProductEntity {
     @JoinColumn(name = "seller_id")
     private UserEntity seller;
 
-    public UUID getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

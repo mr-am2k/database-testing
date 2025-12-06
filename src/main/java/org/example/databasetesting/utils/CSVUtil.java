@@ -47,6 +47,11 @@ public class CSVUtil {
             "queryType", "executionTime", "ramUsage", "cpuUsage"
     };
 
+    private static final String ANALYTICAL_RESULTS_CSV_FILENAME = "analytical.csv";
+    private static final String[] ANALYTICAL_CSV_HEADERS = {
+            "databaseType", "numberOfRecords", "queryName", "caching", "executionTime", "ramUsage", "cpuUsage"
+    };
+
     public static <T> List<List<T>> parseCSV(MultipartFile file, Class<T> clazz, int batchSize) {
         List<List<T>> batches = new ArrayList<>();
 
@@ -374,6 +379,66 @@ public class CSVUtil {
             System.out.println("Update results successfully saved to " + csvFilePath.toAbsolutePath());
         } catch (Exception e) {
             throw new RuntimeException("Failed to save update results to CSV: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Saves analytical query results to a CSV file in the resources directory.
+     *
+     * @param databaseType The type of database (e.g., POSTGRESQL, MONGODB)
+     * @param queryName The name of the analytical query (e.g., ANALYTICAL_QUERY_1, ANALYTICAL_QUERY_2)
+     * @param caching Caching strategy used
+     * @param executionTime Total execution time in milliseconds
+     * @param ramUsage Peak RAM usage
+     * @param cpuUsage Peak CPU usage
+     */
+    public static void saveAnalyticalQueryResultsToCSV(
+            String databaseType,
+            String numberOfRecords,
+            String queryName,
+            String caching,
+            long executionTime,
+            String ramUsage,
+            String cpuUsage) {
+
+        try {
+            Path resourcesDir = Paths.get(RESOURCES_PATH);
+            if (!Files.exists(resourcesDir)) {
+                Files.createDirectories(resourcesDir);
+            }
+
+            Path csvFilePath = resourcesDir.resolve(ANALYTICAL_RESULTS_CSV_FILENAME);
+            boolean fileExists = Files.exists(csvFilePath);
+
+            Path tempFile = Files.createTempFile("temp-", "-analytical-results.csv");
+
+            if (fileExists) {
+                Files.copy(csvFilePath, tempFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            try (CSVWriter writer = new CSVWriter(new FileWriter(tempFile.toFile(), fileExists))) {
+                if (!fileExists || Files.size(csvFilePath) == 0) {
+                    writer.writeNext(ANALYTICAL_CSV_HEADERS);
+                }
+
+                String[] dataRow = {
+                        databaseType,
+                        numberOfRecords,
+                        queryName,
+                        caching,
+                        String.valueOf(executionTime),
+                        ramUsage,
+                        cpuUsage
+                };
+
+                writer.writeNext(dataRow);
+            }
+
+            Files.move(tempFile, csvFilePath, StandardCopyOption.REPLACE_EXISTING);
+
+            System.out.println("Analytical query results successfully saved to " + csvFilePath.toAbsolutePath());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to save analytical query results to CSV: " + e.getMessage(), e);
         }
     }
 }

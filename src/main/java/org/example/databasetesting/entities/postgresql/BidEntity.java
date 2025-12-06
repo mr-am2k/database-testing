@@ -10,7 +10,7 @@ import java.util.UUID;
 public class BidEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    private Integer id;
 
     private Double amount;
     private LocalDate bidTime;
@@ -23,11 +23,11 @@ public class BidEntity {
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    public UUID getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
